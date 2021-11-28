@@ -25,6 +25,8 @@ export default class Courses extends Component {
       studentDataFetched:false,
       filteredCoursesData: [],
       coursesDataFetched: false,
+      allModules:[], //modules to be displayed when on edit page
+      noOfEditModules:'', //no. of modules on edit page
       competencies: [],
       competenciesFetched: false,
       trainerData: [],
@@ -283,9 +285,15 @@ export default class Courses extends Component {
         })
     }
 
-    const LectureTypeSelected = (event) => {
-      let module = (event.target.attributes.getNamedItem("data-module").value)
+    const LectureTypeSelected = (event,type) => {
 
+      let module; 
+      if(type=="addcourse"){
+        module=event.target.attributes.getNamedItem("data-module").value
+      }
+      if(type=="editcourse"){
+          module=event.target.attributes.getNamedItem("data-edit-module").value
+      }
       if (event.target.value === "Live") {
         document.getElementById('RecordedLectureDetails' + module).style.display = 'none'
         document.getElementById('LiveLectureDetails' + module).style.display = 'contents'
@@ -299,6 +307,7 @@ export default class Courses extends Component {
         document.getElementById('RecordedLectureDetails' + module).style.display = 'none'
       }
     }
+
 
     const postFile = (uploads) => {
       uploads.forEach(el => {
@@ -400,6 +409,7 @@ export default class Courses extends Component {
         tempModule.module_date = document.getElementById('form_CourseModuleDate' + i).value;
         tempModule.time_limit = document.getElementById('form_CourseModuleTimeLimit' + i).value;
         tempModule.module_reminder = document.getElementById('form_CourseModuleReminder' + i).value;
+        tempModule.module_id= Date.now()+i;
         tempModule.module_type = tempModuleType;
 
         if (document.getElementById('form_CourseModuleResource' + i).files[0]) {
@@ -530,8 +540,39 @@ export default class Courses extends Component {
         })
     }
 
+    const addorDeleteModuleClicked=(event,type,index)=>{
+      if(type=="add"){
+          let tempallModules=this.state.allModules;
+          let obj={};
+          tempallModules.push(obj);
+          this.setState({
+            allModules:tempallModules,
+            noOfEditModules:tempallModules.length
+          })
+      }else if(type=="delete"){
+          let tempallModules=this.state.allModules;
+          console.log("index:",index);
+          let tempArr=[];
+              for(let i=0;i<index;i++){
+                  tempArr.push(tempallModules[i])
+              }
+              for(let i=index+1;i<tempallModules.length;i++){
+                  tempArr.push(tempallModules[i])
+
+              }
+              console.log(tempArr)
+          this.setState({
+            allModules:tempArr,
+            noOfEditModules:tempallModules.length
+          })
+      }
+    }
     const onEditClicked = (id) => {
       console.log(id);
+      //let tempArr=[]; //clearing previous information
+      //this.setState({
+        //currentEditCourseInfo:tempArr
+      //})
       API2.get('/course/' + id, {})
         .then(res => {
           console.log(res.data.result)
@@ -539,34 +580,114 @@ export default class Courses extends Component {
             activeTab: 301,
             currentEditCourseInfo: res.data.result,
             currentEditCourseInfoFetched: true
+            
           })
+          //logic for setting allModules array and noOfEditModules array
+          if(this.state.currentEditCourseInfo['modules'].length>0){
+            let tempAllModules=[];
+            Object.keys(this.state.currentEditCourseInfo['modules']).map((data,id)=>{
+               tempAllModules.push(this.state.currentEditCourseInfo['modules'][id]);
+            })
+              this.setState({
+                allModules:tempAllModules,
+                noOfEditModules:tempAllModules.length
+              })
+          }
+          console.log("temp all modules:", this.state.allModules);
+          console.log("Object keys:",Object.values(this.state.currentEditCourseInfo['modules']));
         })
         .catch(err => {
           console.log(err)
         })
     }
 
-    const CourseEdit = () => {
+     const CourseEdit = () => {
       document.getElementById('edit_courseForm_submit').disabled = true;
       document.getElementById('edit_courseForm_submit').innerHTML = 'Processing...';
 
+      let postData = {}
+      postData.course_name = document.getElementById('edit_form_courseName').value;
+      postData.trainer = document.getElementById('edit_form_courseTrainer').value;
+      postData.competency = document.getElementById('edit_form_courseCompetency').value;
+      postData.description = document.getElementById('edit_form_description').value;
+      postData.about_this_course = document.getElementById('edit_form_about').value;
+      postData.who_this_course_is_for = document.getElementById('edit_form_whoisthiscoursefor').value;
+      postData.requirements = document.getElementById('edit_form_requirements').value;
+      postData.why_to_learn = document.getElementById('edit_form_whytolearn').value;
+      postData.skills_you_learn = document.getElementById('edit_form_skillsyoulearn').value;
+      postData.category = document.getElementById('edit_form_courseCategory').value;
+      postData.course_paid = (document.getElementById('edit_form_paid').value === "true");
+      postData.course_featured = (document.getElementById('edit_form_featured').value === "true");
+      //postData.university = document.getElementById('form_courseUniversity').value;
+      //postData.course_type = document.getElementById('form_courseType').value;
+      postData.is_private = document.getElementById('edit_form_privacy').value === 'Yes';
+      //to be done
+      postData.course_image = "tbd";
+      postData.start_date = document.getElementById('edit_form_startDate').value;
+      postData.end_date = document.getElementById('edit_form_endDate').value;
+      postData.time_duration = document.getElementById('form_courseDuration').value;
+      postData.price = document.getElementById('edit_form_price').value;
+      postData.no_of_modules = document.getElementById('form_editNOM').value;
 
+     let modules = []
+
+      let uploads = []
+
+       for (let i = 0; i < document.getElementById('form_editNOM').value; i++) {
+        let tempModule = {}
+        let tempModuleType = document.getElementById('form_CourseModuleLectureType' + i).value;
+        tempModule.module_name = document.getElementById('form_editModuleName' + i).value
+        tempModule.module_date = document.getElementById('form_editModuleDate' + i).value;
+        tempModule.time_limit = document.getElementById('form_editModuleTimeLimit' + i).value;
+        tempModule.module_reminder = document.getElementById('form_editModuleReminder' + i).value;
+        tempModule.module_type = tempModuleType;
+
+        if (document.getElementById('form_editModuleResource' + i).files[0]) {
+          let temp_uploadData = {}
+          temp_uploadData.inputId = 'form_editModuleResource' + i;
+          //temp_uploadData.universityName = document.getElementById('form_courseUniversity').value;
+          temp_uploadData.courseName = document.getElementById('edit_form_courseName').value;
+          temp_uploadData.courseModuleName = document.getElementById('form_editModuleName' + i).value;
+          temp_uploadData.uploadType = 'resource';
+          temp_uploadData.course_image = false;
+
+          uploads.push(temp_uploadData)
+        }
+
+        if (tempModuleType === "Recorded") {
+
+          let temp_uploadData = {}
+          temp_uploadData.inputId = 'form_editModuleLecture' + i;
+          //temp_uploadData.universityName = document.getElementById('form_courseUniversity').value;
+          temp_uploadData.courseName = document.getElementById('edit_form_courseName').value;
+          temp_uploadData.courseModuleName = document.getElementById('form_editModuleName' + i).value;
+          temp_uploadData.uploadType = 'lecture';
+          temp_uploadData.course_image = false;
+
+          uploads.push(temp_uploadData)
+        }
+        else if (tempModuleType === "Live") {
+          tempModule.zoom_link = document.getElementById('form_editModuleZoomLink' + i).value;
+        }
+
+        modules.push(tempModule)
+      }
+      postData.modules = modules;
+
+     
       API2
         .patch(`/course/` + this.state.currentEditCourseInfo._id, {
-          "course_name": document.getElementById('edit_form_courseName').value,
-          "description": document.getElementById('edit_form_description').value,
-          "is_private": document.getElementById('edit_form_privacy').value,
-          "course_featured": document.getElementById('edit_form_featured').value,
-          "course_paid": document.getElementById('edit_form_paid').value,
-          "price": document.getElementById('edit_form_price').value,
-          "start_date": document.getElementById('edit_form_startDate').value,
-          "end_date": document.getElementById('edit_form_endDate').value,
+          postData
         })
         .then(res => {
           document.getElementById('edit_courseForm_submit').disabled = false;
           document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
           document.getElementById("editCourseForm").reset();
           // this.getDepartmentNames()
+          postFile(uploads)
+          if (document.getElementById('form_editImage').files[0]) {
+            postCourseImage(document.getElementById('edit-form_university').value, document.getElementById('edit_form_courseName').value, document.getElementById('form_editImage').files[0])
+          }
           this.getCoursesData()
           this.setState({ activeTab: 1 })
 
@@ -575,7 +696,7 @@ export default class Courses extends Component {
           this.getCoursesData()
         })
     }
-    console.log("filetred data:", this.state.filteredCoursesData)
+
     return (
       <>
         <div className="section-body">
@@ -1303,7 +1424,7 @@ export default class Courses extends Component {
                                         className="form-control input-height"
                                         name="department"
                                         data-module={modules}
-                                        onChange={(event) => LectureTypeSelected(event)}
+                                        onChange={(event) => LectureTypeSelected(event,"addcourse")}
                                         id={"form_CourseModuleLectureType" + id}
                                       >
                                         <option defaultValue>Select Lecture Type</option>
@@ -2170,14 +2291,14 @@ export default class Courses extends Component {
                                 <div className="col-md-6 col-sm-12">
                                   <div className="form-group">
                                     <label>About this course</label>
-                                    <input type="text" className="form-control" id="edit_form_description" defaultValue={this.state.currentEditCourseInfo['about_this_course']} />
+                                    <input type="text" className="form-control" id="edit_form_about" defaultValue={this.state.currentEditCourseInfo['about_this_course']} />
                                   </div>
                                 </div>
 
                                 <div className="col-md-6 col-sm-12">
                                   <div className="form-group">
                                     <label>Who this course is for</label>
-                                    <input type="text" className="form-control" id="edit_form_description" defaultValue={this.state.currentEditCourseInfo['who_this_course_is_for']} />
+                                    <input type="text" className="form-control" id="edit_form_whoisthiscoursefor" defaultValue={this.state.currentEditCourseInfo['who_this_course_is_for']} />
                                   </div>
                                 </div>
 
@@ -2185,21 +2306,21 @@ export default class Courses extends Component {
                                 <div className="col-md-6 col-sm-12">
                                   <div className="form-group">
                                     <label>Requirements</label>
-                                    <input type="text" className="form-control" id="edit_form_description" defaultValue={this.state.currentEditCourseInfo['requirements']} />
+                                    <input type="text" className="form-control" id="edit_form_requirements" defaultValue={this.state.currentEditCourseInfo['requirements']} />
                                   </div>
                                 </div>
 
                                 <div className="col-md-6 col-sm-12">
                                   <div className="form-group">
                                     <label>Why to learn</label>
-                                    <input type="text" className="form-control" id="edit_form_description" defaultValue={this.state.currentEditCourseInfo['why_to_learn']} />
+                                    <input type="text" className="form-control" id="edit_form_whytolearn" defaultValue={this.state.currentEditCourseInfo['why_to_learn']} />
                                   </div>
                                 </div>
 
                                 <div className="col-md-6 col-sm-12">
                                   <div className="form-group">
                                     <label>Skills you learn</label>
-                                    <input type="text" className="form-control" id="edit_form_description" defaultValue={this.state.currentEditCourseInfo['skills_you_learn']} />
+                                    <input type="text" className="form-control" id="edit_form_skillsyoulearn" defaultValue={this.state.currentEditCourseInfo['skills_you_learn']} />
                                   </div>
                                 </div>
 
@@ -2355,21 +2476,32 @@ export default class Courses extends Component {
                                     Please upload image here
                                       </small>
                                   </div>
-                                
                                 <div className="form-group row">
                                        <label className="col-md-7 col-form-label">
                                              Number of Modules
                                        </label>
                                         <div className="col-md-7">
-                                          <input type="text" value={this.state.currentEditCourseInfo['no_of_modules']} onChange={(event) => ModuleInputHandler(event)} className="form-control" id="form_editNOM" />
+                                          <input type="text" value={this.state.noOfEditModules} className="form-control" id="form_editNOM" />
                                         </div>
                                   </div> 
+
+                                  <div className="col-sm-12">
+                                 <button
+                                    type="button"
+                                    className="mr-1 btn btn-primary"
+                                    id="edit_courseForm_addModule"
+                                    onClick={(e)=>{
+                                      addorDeleteModuleClicked(e,"add",-1)
+                                    }}
+                                  >
+                                    Add Module
+                                  </button>
+                                </div>
                                   
                                 {this.state.currentEditCourseInfo['modules'].length >0 &&
-                                      Object.keys(this.state.currentEditCourseInfo['modules']).map((data,id)=>{
-                                        let module=this.state.currentEditCourseInfo['modules'];
+                                      this.state.allModules.map((data,id)=>{
+                                        let module=this.state.allModules;
                                                 let modules=[];
-                                                console.log(this.state.currentEditCourseInfo['modules']);
                                                 for(let i=1;i<=this.state.currentEditCourseInfo['modules'].length;i++){
                                                   modules.push("Module "+ i)
                                                 }
@@ -2377,15 +2509,29 @@ export default class Courses extends Component {
                                                  return(
                                                    <div className="card" key={data + [id + 212]}>
                                 <div className="card-header">
-                                  <h3 className="card-title">{modules[id]}</h3>
+
+                                  <h3 className="card-title"> {modules[id]} </h3>
+                              
                                 </div>
                                 <div className="card-body">
+                                  <div className="col-sm-12">
+                                      <button
+                                    type="button" onClick={(e)=>{
+                                      addorDeleteModuleClicked(e,"delete",id)
+                                    }}
+                                    className="btn btn-danger btn-xs"
+                                    id="edit_courseForm_moduleDelete"
+                                  >
+                                    Delete
+                                  </button>
+                                  </div>
                                   <div className="form-group row">
                                     <label className="col-md-3 col-form-label">
                                       Name
                                   </label>
+      
                                     <div className="col-md-7">
-                                      <input type="textarea" className="form-control" id={"form_editModuleName" + id} defaultValue={module[id].module_name}/>
+                                      <input type="textarea" className="form-control" id={"form_editModuleName" + id} defaultValue={module[id].module_name?module[id].module_name:""}/>
                                     </div>
                                   </div>
 
@@ -2406,7 +2552,7 @@ export default class Courses extends Component {
                                       Date
                                   </label>
                                     <div className="col-md-7">
-                                      <input type="date" className="form-control" id={"form_editModuleDate" + id} defaultValue={module[id].module_date}/>
+                                      <input type="date" className="form-control" id={"form_editModuleDate" + id} defaultValue={module[id].module_date?module[id].module_date:""}/>
                                     </div>
                                   </div>
                                       <div className="form-group row">
@@ -2414,7 +2560,7 @@ export default class Courses extends Component {
                                       Time Limit
                                   </label>
                                     <div className="col-md-7">
-                                      <input type="text" className="form-control" id={"form_editModuleTimeLimit" + id} defaultValue={module[id].time_limit}/>
+                                      <input type="text" className="form-control" id={"form_editModuleTimeLimit" + id} defaultValue={module[id].time_limit?module[id].time_limit:""}/>
                                     </div>
                                   </div>
 
@@ -2423,7 +2569,7 @@ export default class Courses extends Component {
                                       Reminder
                                   </label>
                                     <div className="col-md-7">
-                                      <input type="Date" className="form-control" id={"form_editModuleReminder" + id} defaultValue={module[id].module_reminder}/>
+                                      <input type="Date" className="form-control" id={"form_editModuleReminder" + id} defaultValue={module[id].module_reminder?module[id].module_reminder:""}/>
                                     </div>
                                   </div>
 
@@ -2435,9 +2581,9 @@ export default class Courses extends Component {
                                       <select
                                         className="form-control input-height"
                                         name="department"
-                                        data-module={modules}
-                                        onChange={(event) => LectureTypeSelected(event)}
-                                        id={"form_editModuleLectureType" + id} defaultValue={module[id].module_type}
+                                        data-edit-module={modules}
+                                        onChange={(event) => LectureTypeSelected(event,"editcourse")}
+                                        id={"form_editModuleLectureType" + id} defaultValue={module[id].module_type?module[id].module_type:""}
                                       >
                                         <option value="Recorded">Recorded</option>
                                         <option value="Live">Live</option>
@@ -2445,7 +2591,8 @@ export default class Courses extends Component {
                                       </select>
                                     </div>
                                   </div>
-                                  {module[id].module_type=="Recorded"?
+                                  {module[id].module_type 
+                                  && module[id].module_type=="Recorded"?
                                      <div id={'RecordedLectureDetails' + modules}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
@@ -2461,7 +2608,8 @@ export default class Courses extends Component {
                                   </div>
                                   :""}
                                
-                                  {module[id].module_type=="Live"?
+                                  {module[id].module_type
+                                  && module[id].module_type=="Live"?
                                   <div id={'LiveLectureDetails' + modules}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
