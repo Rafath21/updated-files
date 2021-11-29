@@ -285,15 +285,8 @@ export default class Courses extends Component {
         })
     }
 
-    const LectureTypeSelected = (event,type) => {
-
-      let module; 
-      if(type=="addcourse"){
-        module=event.target.attributes.getNamedItem("data-module").value
-      }
-      if(type=="editcourse"){
-          module=event.target.attributes.getNamedItem("data-edit-module").value
-      }
+    const LectureTypeSelected = (event) => {
+      let module=event.target.attributes.getNamedItem("data-module").value
       if (event.target.value === "Live") {
         document.getElementById('RecordedLectureDetails' + module).style.display = 'none'
         document.getElementById('LiveLectureDetails' + module).style.display = 'contents'
@@ -305,6 +298,23 @@ export default class Courses extends Component {
       if (event.target.value === "Classroom") {
         document.getElementById('LiveLectureDetails' + module).style.display = 'none'
         document.getElementById('RecordedLectureDetails' + module).style.display = 'none'
+      }
+    }
+      const editLectureTypeSelected = (event) => {
+
+      let module=event.target.attributes.getNamedItem("data-edit-module").value
+      
+      if (event.target.value === "Live") {
+        document.getElementById('EditRecordedLectureDetails' + module).style.display = 'none'
+        document.getElementById('EditLiveLectureDetails' + module).style.display = 'contents'
+      }
+      if (event.target.value === "Recorded") {
+        document.getElementById('EditLiveLectureDetails' + module).style.display = 'none'
+        document.getElementById('EditRecordedLectureDetails' + module).style.display = 'contents'
+      }
+      if (event.target.value === "Classroom") {
+        document.getElementById('EditLiveLectureDetails' + module).style.display = 'none'
+        document.getElementById('EditRecordedLectureDetails' + module).style.display = 'none'
       }
     }
 
@@ -620,7 +630,7 @@ export default class Courses extends Component {
 
        for (let i = 0; i < this.state.noOfEditModules; i++) {
         let tempModule = {}
-        let tempModuleType = document.getElementById('form_CourseModuleLectureType' + i).value;
+        let tempModuleType = document.getElementById('form_editModuleLectureType' + i).value;
         tempModule.module_name = document.getElementById('form_editModuleName' + i).value
         tempModule.module_date = document.getElementById('form_editModuleDate' + i).value;
         tempModule.time_limit = document.getElementById('form_editModuleTimeLimit' + i).value;
@@ -1407,7 +1417,7 @@ export default class Courses extends Component {
                                       Date
                                   </label>
                                     <div className="col-md-7">
-                                      <input type="date" className="form-control" id={"form_CourseModuleDate" + id} />
+                                      <input t nype="date" className="form-control" id={"form_CourseModuleDate" + id} />
                                     </div>
                                   </div>
 
@@ -1440,7 +1450,7 @@ export default class Courses extends Component {
                                         className="form-control input-height"
                                         name="department"
                                         data-module={modules}
-                                        onChange={(event) => LectureTypeSelected(event,"addcourse")}
+                                        onChange={(event) => LectureTypeSelected(event)}
                                         id={"form_CourseModuleLectureType" + id}
                                       >
                                         <option defaultValue>Select Lecture Type</option>
@@ -2589,7 +2599,7 @@ export default class Courses extends Component {
                                         className="form-control input-height"
                                         name="department"
                                         data-edit-module={modules}
-                                        onChange={(event) => LectureTypeSelected(event,"editcourse")}
+                                        onChange={(event) => editLectureTypeSelected(event)}
                                         id={"form_editModuleLectureType" + id} defaultValue={module[id].module_type?module[id].module_type:""}
                                       >
                                         <option value="Recorded">Recorded</option>
@@ -2598,9 +2608,7 @@ export default class Courses extends Component {
                                       </select>
                                     </div>
                                   </div>
-                                  {module[id].module_type 
-                                  && module[id].module_type=="Recorded"?
-                                     <div id={'RecordedLectureDetails' + modules}>
+                                     <div id={'EditRecordedLectureDetails' + modules} style={{ display: 'none' }}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
                                         Edit Lecture
@@ -2613,11 +2621,9 @@ export default class Courses extends Component {
                                       </div>
                                     </div>
                                   </div>
-                                  :""}
+                                  
                                
-                                  {module[id].module_type
-                                  && module[id].module_type=="Live"?
-                                  <div id={'LiveLectureDetails' + modules}>
+                                  <div id={'EditLiveLectureDetails' + modules} style={{ display: 'none' }}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
                                         Zoom Link
@@ -2646,7 +2652,7 @@ export default class Courses extends Component {
                                       </div>
                                     </div>
                                   </div>
-                                  :""}
+                                  
                                   </div>
                               </div>
                                                     
