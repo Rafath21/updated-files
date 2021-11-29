@@ -2674,12 +2674,12 @@ export default class Courses extends Component {
                                      <div id={'RecordedLectureDetails' + modules}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
-                                        Edit Lecture
+                                        Resource Lecture
                                       </label>
                                       <div className="col-md-7">
-                                        <input type="file" name="" id={"form_editModuleLecture" + id}/>
+                                        <input type="file" name="" id={"form_editModuleLecture" + id} disabled/>
                                         <small id="fileHelp" className="form-text text-muted">
-                                          Edit lecture upload file
+                                          Resource file
                                         </small>
                                       </div>
                                     </div>
@@ -2693,7 +2693,7 @@ export default class Courses extends Component {
                                         Zoom Link
                                     </label>
                                       <div className="col-md-7">
-                                        <input type="text" className="form-control" id={"form_editModuleZoomLink" + id} defaultValue={module[id].zoom_link}/>
+                                        <input type="text" className="form-control" id={"form_editModuleZoomLink" + id} defaultValue={module[id].zoom_link} disabled/>
                                       </div>
                                     </div>
                                     <div className="form-group row">
@@ -2704,7 +2704,7 @@ export default class Courses extends Component {
                                         <select
                                           className="form-control input-height"
                                           name="department"
-                                          id={"form_editModuleRepeatOption" + id}
+                                          id={"form_editModuleRepeatOption" + id} disabled
                                         >
                                           <option value="Category 1">Never</option>
                                           <option value="Category 2">Daily</option>
