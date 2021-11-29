@@ -620,7 +620,8 @@ export default class Courses extends Component {
       postData.end_date = document.getElementById('edit_form_endDate').value;
       postData.time_duration = document.getElementById('form_courseDuration').value;
       postData.price = document.getElementById('edit_form_price').value;
-      postData.no_of_modules = this.state.noOfEditModules;
+      postData.no_of_modules = document.getElementById('form_editNOM').value;
+
 
       console.log("postData:",postData)
 
@@ -674,7 +675,28 @@ export default class Courses extends Component {
      
       API2
         .patch(`/course/` + this.state.currentEditCourseInfo._id, {
-          postData
+      "course_name" : postData.course_name,
+      "trainer" : postData.trainer,
+      "competency" :postData.competency,
+      "description" : postData.description,
+      "about_this_course" : postData.about_this_course,
+      "who_this_course_is_for" : postData.who_this_course_is_for,
+      "requirements" : postData.requirements,
+      "why_to_learn" : postData.why_to_learn,
+      "skills_you_learn" : postData.skills_you_learn,
+      "category" : postData.category,
+      "course_paid" : postData.course_paid,
+      "course_featured" : postData.course_featured,
+      "university" : postData.university,
+      "course_type" : postData.course_type,
+      "is_private" : postData.is_private,
+     "course_image" : postData.course_image,
+      "start_date" :postData.start_date,
+      "end_date" :postData.end_date, 
+      "time_duration" : postData.time_duration,
+      "price" :postData.price, 
+      "no_of_modules" : document.getElementById('form_editNOM').value,
+      "modules":postData.modules
         })
         .then(res => {
           console.log(res);
