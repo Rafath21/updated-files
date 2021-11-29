@@ -27,6 +27,7 @@ export default class Courses extends Component {
       coursesDataFetched: false,
       allModules:[], //modules to be displayed when on edit page
       noOfEditModules:'', //no. of modules on edit page
+      addedModules:[],//modules that are being added on the edit page
       competencies: [],
       competenciesFetched: false,
       trainerData: [],
@@ -300,7 +301,7 @@ export default class Courses extends Component {
         document.getElementById('RecordedLectureDetails' + module).style.display = 'none'
       }
     }
-      const editLectureTypeSelected = (event) => {
+ /*   const editLectureTypeSelected = (event) => {
 
       let module=event.target.attributes.getNamedItem("data-edit-module").value
       
@@ -316,7 +317,26 @@ export default class Courses extends Component {
         document.getElementById('EditLiveLectureDetails' + module).style.display = 'none'
         document.getElementById('EditRecordedLectureDetails' + module).style.display = 'none'
       }
+    }*/
+
+     const addNewLectureTypeSelected = (event) => {
+
+      let module=event.target.attributes.getNamedItem("data-add-module").value
+      
+      if (event.target.value === "Live") {
+        document.getElementById('addRecordedLectureDetails' + module).style.display = 'none'
+        document.getElementById('addLiveLectureDetails' + module).style.display = 'contents'
+      }
+      if (event.target.value === "Recorded") {
+        document.getElementById('addLiveLectureDetails' + module).style.display = 'none'
+        document.getElementById('addRecordedLectureDetails' + module).style.display = 'contents'
+      }
+      if (event.target.value === "Classroom") {
+        document.getElementById('addLiveLectureDetails' + module).style.display = 'none'
+        document.getElementById('addRecordedLectureDetails' + module).style.display = 'none'
+      }
     }
+
 
 
     const postFile = (uploads) => {
@@ -551,12 +571,11 @@ export default class Courses extends Component {
     }
 
     const  addModuleClicked=(event)=>{
-          let tempallModules=this.state.allModules;
+          let tempallModules=this.state.addedModules;
           let obj={};
           tempallModules.push(obj);
           this.setState({
-            allModules:tempallModules,
-            noOfEditModules:tempallModules.length
+            addedModules:tempallModules,
           })
       
     }
@@ -599,30 +618,8 @@ export default class Courses extends Component {
       document.getElementById('edit_courseForm_submit').innerHTML = 'Processing...';
 
       let postData = {}
-      postData.course_name = document.getElementById('edit_form_courseName').value;
-      postData.trainer = document.getElementById('edit_form_courseTrainer').value;
-      postData.competency = document.getElementById('edit_form_courseCompetency').value;
-      postData.description = document.getElementById('edit_form_description').value;
-      postData.about_this_course = document.getElementById('edit_form_about').value;
-      postData.who_this_course_is_for = document.getElementById('edit_form_whoisthiscoursefor').value;
-      postData.requirements = document.getElementById('edit_form_requirements').value;
-      postData.why_to_learn = document.getElementById('edit_form_whytolearn').value;
-      postData.skills_you_learn = document.getElementById('edit_form_skillsyoulearn').value;
-      postData.category = document.getElementById('edit_form_courseCategory').value;
-      postData.course_paid = (document.getElementById('edit_form_paid').value === "true");
-      postData.course_featured = (document.getElementById('edit_form_featured').value === "true");
       postData.university = this.state.currentEditCourseInfo.university;
       postData.course_type = this.state.currentEditCourseInfo.course_type;
-      postData.is_private = document.getElementById('edit_form_privacy').value === 'Yes';
-      //to be done
-      postData.course_image = "tbd";
-      postData.start_date = document.getElementById('edit_form_startDate').value;
-      postData.end_date = document.getElementById('edit_form_endDate').value;
-      postData.time_duration = document.getElementById('form_courseDuration').value;
-      postData.price = document.getElementById('edit_form_price').value;
-      postData.no_of_modules = document.getElementById('form_editNOM').value;
-
-
       console.log("postData:",postData)
 
      let modules = []
@@ -670,31 +667,73 @@ export default class Courses extends Component {
         modules.push(tempModule)
        
       }
+
+       for (let i = 0; i < this.state.addedModules.length; i++) {
+        let tempModule = {}
+        let tempModuleType = document.getElementById('form_addModuleLectureType' + i).value;
+        tempModule.module_name = document.getElementById('form_addModuleName' + i).value
+        tempModule.module_date = document.getElementById('form_addModuleDate' + i).value;
+        tempModule.time_limit = document.getElementById('form_addModuleTimeLimit' + i).value;
+        tempModule.module_reminder = document.getElementById('form_addModuleReminder' + i).value;
+        tempModule.module_type = tempModuleType;
+
+        if (document.getElementById('form_addModuleResource' + i).files[0]) {
+          let temp_uploadData = {}
+          temp_uploadData.inputId = 'form_addModuleResource' + i;
+          temp_uploadData.universityName = this.state.currentEditCourseInfo.university;
+
+          temp_uploadData.courseName = document.getElementById('edit_form_courseName').value;
+          temp_uploadData.courseModuleName = document.getElementById('form_addModuleName' + i).value;
+          temp_uploadData.uploadType = 'resource';
+          temp_uploadData.course_image = false;
+
+          uploads.push(temp_uploadData)
+        }
+
+        if (tempModuleType === "Recorded") {
+
+          let temp_uploadData = {}
+          temp_uploadData.inputId = 'form_addModuleLecture' + i;
+          temp_uploadData.universityName = this.state.currentEditCourseInfo.university;
+          temp_uploadData.courseName = document.getElementById('edit_form_courseName').value;
+          temp_uploadData.courseModuleName = document.getElementById('form_addModuleName' + i).value;
+          temp_uploadData.uploadType = 'lecture';
+          temp_uploadData.course_image = false;
+
+          uploads.push(temp_uploadData)
+        }
+        else if (tempModuleType === "Live") {
+          tempModule.zoom_link = document.getElementById('form_addModuleZoomLink' + i).value;
+        }
+
+        modules.push(tempModule)
+       
+      }
       postData.modules = modules;
 
      
       API2
         .patch(`/course/` + this.state.currentEditCourseInfo._id, {
-      "course_name" : postData.course_name,
-      "trainer" : postData.trainer,
-      "competency" :postData.competency,
-      "description" : postData.description,
-      "about_this_course" : postData.about_this_course,
-      "who_this_course_is_for" : postData.who_this_course_is_for,
-      "requirements" : postData.requirements,
-      "why_to_learn" : postData.why_to_learn,
-      "skills_you_learn" : postData.skills_you_learn,
-      "category" : postData.category,
-      "course_paid" : postData.course_paid,
-      "course_featured" : postData.course_featured,
+      "course_name" : document.getElementById('edit_form_courseName').value,
+      "trainer" : document.getElementById('edit_form_courseTrainer').value,
+      "competency" :document.getElementById('edit_form_courseCompetency').value,
+      "description" : document.getElementById('edit_form_description').value,
+      "about_this_course" :document.getElementById('edit_form_about').value ,
+      "who_this_course_is_for" :document.getElementById('edit_form_whoisthiscoursefor').value,
+      "requirements" : document.getElementById('edit_form_requirements').value,
+      "why_to_learn" : document.getElementById('edit_form_whytolearn').value,
+      "skills_you_learn" : document.getElementById('edit_form_skillsyoulearn').value,
+      "category" : document.getElementById('edit_form_courseCategory').value,
+      "course_paid" : (document.getElementById('edit_form_paid').value === "true"),
+      "course_featured" : (document.getElementById('edit_form_featured').value === "true"),
       "university" : postData.university,
       "course_type" : postData.course_type,
-      "is_private" : postData.is_private,
+      "is_private" :  document.getElementById('edit_form_privacy').value === 'Yes',
      "course_image" : postData.course_image,
-      "start_date" :postData.start_date,
-      "end_date" :postData.end_date, 
-      "time_duration" : postData.time_duration,
-      "price" :postData.price, 
+      "start_date" :document.getElementById('edit_form_startDate').value,
+      "end_date" :document.getElementById('edit_form_endDate').value, 
+      "time_duration" : document.getElementById('form_courseDuration').value,
+      "price" :document.getElementById('edit_form_price').value, 
       "no_of_modules" : document.getElementById('form_editNOM').value,
       "modules":postData.modules
         })
@@ -2552,10 +2591,10 @@ export default class Courses extends Component {
                                       this.state.allModules.map((data,id)=>{
                                         let module=this.state.allModules;
                                                 let modules=[];
+                                                
                                                 for(let i=1;i<=this.state.currentEditCourseInfo['modules'].length;i++){
                                                   modules.push("Module "+ i)
                                                 }
-                                                // return moduleEditHtml.map((modules,id)=>{
                                                  return(
                                                    <div className="card" key={data + [id + 212]}>
                                 <div className="card-header">
@@ -2617,12 +2656,13 @@ export default class Courses extends Component {
                                       Lecture Type
                                   </label>
                                     <div className="col-md-7">
+                
                                       <select
                                         className="form-control input-height"
                                         name="department"
                                         data-edit-module={modules}
-                                        onChange={(event) => editLectureTypeSelected(event)}
-                                        id={"form_editModuleLectureType" + id} defaultValue={module[id].module_type?module[id].module_type:""}
+                                        id={"form_editModuleLectureType" + id} defaultValue={module[id].module_type?module[id].module_type:""} 
+                                        disabled
                                       >
                                         <option value="Recorded">Recorded</option>
                                         <option value="Live">Live</option>
@@ -2630,7 +2670,8 @@ export default class Courses extends Component {
                                       </select>
                                     </div>
                                   </div>
-                                     <div id={'EditRecordedLectureDetails' + modules} style={{ display: 'none' }}>
+                                    {module[id].module_type=="Recorded"?
+                                     <div id={'RecordedLectureDetails' + modules}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
                                         Edit Lecture
@@ -2643,9 +2684,10 @@ export default class Courses extends Component {
                                       </div>
                                     </div>
                                   </div>
+                                  :""}
                                   
-                               
-                                  <div id={'EditLiveLectureDetails' + modules} style={{ display: 'none' }}>
+                                {module[id].module_type=="Live"?
+                                  <div id={'LiveLectureDetails' + modules}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
                                         Zoom Link
@@ -2654,7 +2696,6 @@ export default class Courses extends Component {
                                         <input type="text" className="form-control" id={"form_editModuleZoomLink" + id} defaultValue={module[id].zoom_link}/>
                                       </div>
                                     </div>
-
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
                                         Repeat Option
@@ -2674,9 +2715,147 @@ export default class Courses extends Component {
                                       </div>
                                     </div>
                                   </div>
-                                  
+                                  :""}
+
                                   </div>
                               </div>
+                                                    
+                                                  )
+                                                //})
+                                          })
+                                       
+                                      // : "" 
+                                      }
+
+                                     {this.state.addedModules.length >0 &&
+                                      this.state.addedModules.map((data,id)=>{
+                                                let modules=[];
+                                                let previousLength=this.state.currentEditCourseInfo['modules'].length;
+                                                let modifiedLength=previousLength+this.state.addedModules.length
+                                                for(let i=previousLength+1;i<=modifiedLength;i++){
+                                                  modules.push("Module "+ i)
+                                                }
+                                                 return(
+                                                   <div className="card" key={data + [id + 212]}>
+                                               <div className="card-header">
+
+                                                   <h3 className="card-title"> {modules[id]} </h3>
+                              
+                                              </div>
+                                <div className="card-body">
+                                  <div className="form-group row">
+                                    <label className="col-md-3 col-form-label">
+                                      Name
+                                  </label>
+      
+                                    <div className="col-md-7">
+                                      <input type="textarea" className="form-control" id={"form_addModuleName" + id} />
+                                    </div>
+                                  </div>
+
+                                  <div className="form-group row">
+                                    <label className="col-md-3 col-form-label">
+                                      Add Resources
+                                  </label>
+                                    <div className="col-md-7">
+                                      <input type="file" name="" id={"form_addModuleResource" + id} />
+                                      <small id="fileHelp" className="form-text text-muted">
+                                        Add resource material
+                                    </small>
+                                    </div>
+                                  </div>
+
+                                  <div className="form-group row">
+                                    <label className="col-md-3 col-form-label">
+                                      Date
+                                  </label>
+                                    <div className="col-md-7">
+                                      <input type="date" className="form-control" id={"form_addModuleDate" + id} />
+                                    </div>
+                                  </div>
+                                      <div className="form-group row">
+                                    <label className="col-md-3 col-form-label">
+                                      Time Limit
+                                  </label>
+                                    <div className="col-md-7">
+                                      <input type="text" className="form-control" id={"form_addModuleTimeLimit" + id}/>
+                                    </div>
+                                  </div>
+
+                                  <div className="form-group row">
+                                    <label className="col-md-3 col-form-label">
+                                      Reminder
+                                  </label>
+                                    <div className="col-md-7">
+                                      <input type="Date" className="form-control" id={"form_addModuleReminder" + id} />
+                                    </div>
+                                  </div>
+
+                                  <div className="form-group row">
+                                    <label className="col-md-3 col-form-label">
+                                      Lecture Type
+                                  </label>
+                                    <div className="col-md-7">
+                                      <select
+                                        className="form-control input-height"
+                                        name="department"
+                                        data-add-module={modules}
+                                        onChange={(event) => addNewLectureTypeSelected(event)}
+                                        id={"form_addModuleLectureType" + id} 
+                                      >
+                                        <option value="Recorded">Recorded</option>
+                                        <option value="Live">Live</option>
+                                        <option value="Classroom">Classroom</option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div id={'addRecordedLectureDetails' + modules} style={{ display: 'none' }}>
+                                    <div className="form-group row">
+                                      <label className="col-md-3 col-form-label">
+                                        Upload Lecture
+                                      </label>
+                                      <div className="col-md-7">
+                                        <input type="file" name="" id={"form_addModuleLecture" + id} />
+                                        <small id="fileHelp" className="form-text text-muted">
+                                          Please upload lecture
+                                        </small>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div id={'addLiveLectureDetails' + modules} style={{ display: 'none' }}>
+                                    <div className="form-group row">
+                                      <label className="col-md-3 col-form-label">
+                                        Zoom Link
+                                    </label>
+                                      <div className="col-md-7">
+                                        <input type="text" className="form-control" id={"form_addModuleZoomLink" + id} />
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                    <div className="form-group row">
+                                      <label className="col-md-3 col-form-label">
+                                        Repeat Option
+                                      </label>
+                                      <div className="col-md-7">
+                                        <select
+                                          className="form-control input-height"
+                                          name="department"
+                                          id={"form_addModuleRepeatOption" + id}
+                                        >
+                                          <option value="Category 1">Never</option>
+                                          <option value="Category 2">Daily</option>
+                                          <option value="Category 2">Weekly</option>
+                                          <option value="Category 2">Monthly</option>
+                                          <option value="Category 3">Quarterly</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  </div>
+                              
                                                     
                                                   )
                                                 //})
