@@ -540,8 +540,7 @@ export default class Courses extends Component {
         })
     }
 
-    const addorDeleteModuleClicked=(event,type,index)=>{
-      if(type=="add"){
+    const  addModuleClicked=(event)=>{
           let tempallModules=this.state.allModules;
           let obj={};
           tempallModules.push(obj);
@@ -549,23 +548,7 @@ export default class Courses extends Component {
             allModules:tempallModules,
             noOfEditModules:tempallModules.length
           })
-      }else if(type=="delete"){
-          let tempallModules=this.state.allModules;
-          console.log("index:",index);
-          let tempArr=[];
-              for(let i=0;i<index;i++){
-                  tempArr.push(tempallModules[i])
-              }
-              for(let i=index+1;i<tempallModules.length;i++){
-                  tempArr.push(tempallModules[i])
-
-              }
-              console.log(tempArr)
-          this.setState({
-            allModules:tempArr,
-            noOfEditModules:tempallModules.length
-          })
-      }
+      
     }
     const onEditClicked = (id) => {
       console.log(id);
@@ -618,8 +601,8 @@ export default class Courses extends Component {
       postData.category = document.getElementById('edit_form_courseCategory').value;
       postData.course_paid = (document.getElementById('edit_form_paid').value === "true");
       postData.course_featured = (document.getElementById('edit_form_featured').value === "true");
-      //postData.university = document.getElementById('form_courseUniversity').value;
-      //postData.course_type = document.getElementById('form_courseType').value;
+      postData.university = this.state.currentEditCourseInfo.university;
+      postData.course_type = this.state.currentEditCourseInfo.course_type;
       postData.is_private = document.getElementById('edit_form_privacy').value === 'Yes';
       //to be done
       postData.course_image = "tbd";
@@ -627,13 +610,15 @@ export default class Courses extends Component {
       postData.end_date = document.getElementById('edit_form_endDate').value;
       postData.time_duration = document.getElementById('form_courseDuration').value;
       postData.price = document.getElementById('edit_form_price').value;
-      postData.no_of_modules = document.getElementById('form_editNOM').value;
+      postData.no_of_modules = this.state.noOfEditModules;
+
+      console.log("postData:",postData)
 
      let modules = []
 
       let uploads = []
 
-       for (let i = 0; i < document.getElementById('form_editNOM').value; i++) {
+       for (let i = 0; i < this.state.noOfEditModules; i++) {
         let tempModule = {}
         let tempModuleType = document.getElementById('form_CourseModuleLectureType' + i).value;
         tempModule.module_name = document.getElementById('form_editModuleName' + i).value
@@ -645,7 +630,8 @@ export default class Courses extends Component {
         if (document.getElementById('form_editModuleResource' + i).files[0]) {
           let temp_uploadData = {}
           temp_uploadData.inputId = 'form_editModuleResource' + i;
-          //temp_uploadData.universityName = document.getElementById('form_courseUniversity').value;
+          temp_uploadData.universityName = this.state.currentEditCourseInfo.university;
+
           temp_uploadData.courseName = document.getElementById('edit_form_courseName').value;
           temp_uploadData.courseModuleName = document.getElementById('form_editModuleName' + i).value;
           temp_uploadData.uploadType = 'resource';
@@ -658,7 +644,7 @@ export default class Courses extends Component {
 
           let temp_uploadData = {}
           temp_uploadData.inputId = 'form_editModuleLecture' + i;
-          //temp_uploadData.universityName = document.getElementById('form_courseUniversity').value;
+          temp_uploadData.universityName = this.state.currentEditCourseInfo.university;
           temp_uploadData.courseName = document.getElementById('edit_form_courseName').value;
           temp_uploadData.courseModuleName = document.getElementById('form_editModuleName' + i).value;
           temp_uploadData.uploadType = 'lecture';
@@ -671,6 +657,7 @@ export default class Courses extends Component {
         }
 
         modules.push(tempModule)
+       
       }
       postData.modules = modules;
 
@@ -680,6 +667,7 @@ export default class Courses extends Component {
           postData
         })
         .then(res => {
+          console.log(res);
           document.getElementById('edit_courseForm_submit').disabled = false;
           document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
           document.getElementById("editCourseForm").reset();
@@ -689,6 +677,11 @@ export default class Courses extends Component {
             postCourseImage(document.getElementById('edit-form_university').value, document.getElementById('edit_form_courseName').value, document.getElementById('form_editImage').files[0])
           }
           this.getCoursesData()
+          let temp=[];
+          this.setState({
+            currentEditCourseInfoFetched:false,
+            currentEditCourseInfo:temp
+          })
           this.setState({ activeTab: 1 })
 
         })
@@ -752,7 +745,15 @@ export default class Courses extends Component {
                 <NavItem>
                   <NavLink
                     className={classnames({ active: activeTab === 1 })}
-                    onClick={() => this.setState({ activeTab: 1 })}
+                    onClick={() =>{ 
+                      this.setState({ activeTab: 1 })
+                      if(this.state.currentUser!="Student"){
+                        let temp=[];
+                        this.setState({currentEditCourseInfoFetched:false})
+                        this.setState({currentEditCourseInfo:temp})
+                      }
+                       
+                    }}
                   >
                     Completed Courses
                   </NavLink>
@@ -783,7 +784,13 @@ export default class Courses extends Component {
                     <NavItem>
                       <NavLink
                         className={classnames({ active: activeTab === 101 })}
-                        onClick={() => this.setState({ activeTab: 101 })}
+                        onClick={(e) => {
+                        
+                        this.setState({ activeTab: 101 })
+                        let temp=[];
+                        this.setState({currentEditCourseInfoFetched:false})
+                        this.setState({currentEditCourseInfo:temp})
+                        }}
                       >
                         Paid Courses
                   </NavLink>
@@ -791,7 +798,12 @@ export default class Courses extends Component {
                     <NavItem>
                       <NavLink
                         className={classnames({ active: activeTab === 102 })}
-                        onClick={() => this.setState({ activeTab: 102 })}
+                        onClick={() =>{
+                        let temp=[];
+                        this.setState({currentEditCourseInfoFetched:false})
+                        this.setState({currentEditCourseInfo:temp})
+                           this.setState({ activeTab: 102 })}
+                          }
                       >
                         Unpaid Courses
                   </NavLink>
@@ -799,7 +811,11 @@ export default class Courses extends Component {
                     <NavItem>
                       <NavLink
                         className={classnames({ active: activeTab === 3 })}
-                        onClick={() => this.setState({ activeTab: 3 })}
+                        onClick={() =>{ 
+                          let temp=[];
+                        this.setState({currentEditCourseInfoFetched:false})
+                        this.setState({currentEditCourseInfo:temp})
+                        this.setState({ activeTab: 3 })}}
                       >
                         Add Course
                     </NavLink>
@@ -1755,7 +1771,7 @@ export default class Courses extends Component {
               {this.state.currentUser=="Trainer"?
               
               <>
-              {/*paid courses-trainer */}
+              {/*paid courses-trainer module */}
               <TabPane tabId={101} className={classnames(["fade show"])}>
                 <div className="row row-deck">
                   {
@@ -1868,7 +1884,7 @@ export default class Courses extends Component {
                 </div>
 
               </TabPane>
-              {/* unpaid  courses-trainer*/ }
+              {/* unpaid  courses-trainer module*/ }
                 <TabPane tabId={102} className={classnames(["fade show"])}>
                 <div className="row row-deck">
                   {
@@ -2075,6 +2091,7 @@ export default class Courses extends Component {
                                           <td className="tx-medium" onClick={()=>{
                                             console.log("index:",this.state.trainersCompletedCourses[index]);
                                             getStudentFilteredData(this.state.trainersCompletedCourses[index]["students"])
+                          
                                             this.setState({activeTab:10})
                                             }}>Students</td>
                                           <td className="text-right">{this.state.trainersCompletedCourses[index]["students"].length}</td>
@@ -2098,7 +2115,7 @@ export default class Courses extends Component {
 
               </TabPane>
 
-               {/*To show details of students enrolled in a course to the trainer*/}
+               {/*To show details of students enrolled in a course to the trainer and admin*/}
               <TabPane tabId={10} className={classnames(["fade show"])}>
                     <>
                     <h4>Students</h4>
@@ -2259,6 +2276,9 @@ export default class Courses extends Component {
                   }
                 </TabPane>
               }
+
+
+              {/* edit a course page*/}
 
               <TabPane tabId={301} className={classnames(["fade show"])}>
 
@@ -2483,22 +2503,20 @@ export default class Courses extends Component {
                                         <div className="col-md-7">
                                           <input type="text" value={this.state.noOfEditModules} className="form-control" id="form_editNOM" />
                                         </div>
-                                  </div> 
-
-                                  <div className="col-sm-12">
-                                 <button
+                                      <div>
+                                         <button
                                     type="button"
                                     className="mr-1 btn btn-primary"
                                     id="edit_courseForm_addModule"
                                     onClick={(e)=>{
-                                      addorDeleteModuleClicked(e,"add",-1)
+                                      addModuleClicked(e)
                                     }}
                                   >
                                     Add Module
                                   </button>
-                                </div>
-                                  
-                                {this.state.currentEditCourseInfo['modules'].length >0 &&
+                                    </div>
+                                  </div> 
+                                {this.state.allModules.length >0 &&
                                       this.state.allModules.map((data,id)=>{
                                         let module=this.state.allModules;
                                                 let modules=[];
@@ -2514,17 +2532,6 @@ export default class Courses extends Component {
                               
                                 </div>
                                 <div className="card-body">
-                                  <div className="col-sm-12">
-                                      <button
-                                    type="button" onClick={(e)=>{
-                                      addorDeleteModuleClicked(e,"delete",id)
-                                    }}
-                                    className="btn btn-danger btn-xs"
-                                    id="edit_courseForm_moduleDelete"
-                                  >
-                                    Delete
-                                  </button>
-                                  </div>
                                   <div className="form-group row">
                                     <label className="col-md-3 col-form-label">
                                       Name
