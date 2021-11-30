@@ -339,8 +339,8 @@ export default class Courses extends Component {
 
 
 
-    const postFile = (uploads) => {
-      uploads.forEach(el => {
+    const postFile =async (uploads) => {
+      uploads.forEach(async(el) => {
         console.log(el)
         let file = document.getElementById(el.inputId).files[0];
         let data = new FormData();
@@ -355,14 +355,13 @@ export default class Courses extends Component {
             'content-type': 'multipart/form-data'
           }
         }
-        API2
-          .post(`/course/file-upload`, data, config)
-          .then(res => {
-            console.log(res)
-          })
-          .catch((error) => {
-            console.log(error)
-          })
+      try{
+      let res= await  API2.post(`/course/file-upload`, data, config)
+      console.log(res);
+      }catch(err){
+        console.log(err);
+      }
+      
       })
     }
 
@@ -378,7 +377,8 @@ export default class Courses extends Component {
       }
     }
 
-    const postCourseImage = (university_name, course_name, postFile) => {
+  const postCourseImage = async (university_name, course_name, postFile) => {
+      console.log("in post course image");
       let file = postFile;
       let data = new FormData();
       data.append('file', file);
@@ -392,15 +392,14 @@ export default class Courses extends Component {
           'content-type': 'multipart/form-data'
         }
       }
-      API2
-        .post(`/course/file-upload`, data, config)
-        .then(res => {
-          console.log(res)
-        })
-        .catch((error) => {
-          console.log(error)
-        })
+    try{
+    let res=await API2.post(`/course/file-upload`, data, config)
+    console.log("post course image res:",res)
+    }catch(err){
+      console.log(err);
     }
+    
+  }
 
     const addCourseSubmit = () => {
 
@@ -453,7 +452,7 @@ export default class Courses extends Component {
       document.getElementById('addCourseSubmitBtn').value="Submit";
       }else{
 
-        let modules = []
+      let modules = []
 
       let uploads = []
 
@@ -464,7 +463,6 @@ export default class Courses extends Component {
         tempModule.module_date = document.getElementById('form_CourseModuleDate' + i).value;
         tempModule.time_limit = document.getElementById('form_CourseModuleTimeLimit' + i).value;
         tempModule.module_reminder = document.getElementById('form_CourseModuleReminder' + i).value;
-        tempModule.module_id= Date.now()+i;
         tempModule.module_type = tempModuleType;
 
         if (document.getElementById('form_CourseModuleResource' + i).files[0]) {
@@ -495,7 +493,7 @@ export default class Courses extends Component {
           tempModule.zoom_link = document.getElementById('form_CourseModuleZoomLink' + i).value;
         }
 
-        modules.push(tempModule)
+      modules.push(tempModule)
       }
       postData.modules = modules;
 
@@ -503,26 +501,31 @@ export default class Courses extends Component {
       API2
         .post(`/course`, postData)
         .then(res => {
-          //console.log(uploads)
           if(res.status==201){
             console.log("response status:",res.status)
-            clearForm();
-            notify();
-          }
-          postFile(uploads)
-          if (document.getElementById('form_CourseImage').files[0]) {
-            postCourseImage(document.getElementById('form_courseUniversity').value, document.getElementById('form_courseName').value, document.getElementById('form_CourseImage').files[0])
-          }
+            postFile(uploads).then(()=>{
+                if (document.getElementById('form_CourseImage').files[0]) {
+                console.log("university name:",postData.university)
+                console.log("course name:",postData.course_name);
+                console.log("file to be uploaded:", document.getElementById('form_CourseImage').files[0])
+                postCourseImage(postData.university, postData.course_name, document.getElementById('form_CourseImage').files[0])
+                .then(()=>{
+                      this.getCoursesData()
+                      document.getElementById('addCourseSubmitBtn').disabled=false;
+                      document.getElementById('addCourseSubmitBtn').value="Submit";
+                      document.getElementById('form_courseNOM').value='';
+                      notify();
+                      clearForm();
+                      this.setState({
+                        moduleValue:'',
+                        activeTab:1
+                      })
+                      //window.location.reload();
+                  })
+                }
 
-      this.getCoursesData()
-      document.getElementById('addCourseSubmitBtn').disabled=false;
-      document.getElementById('addCourseSubmitBtn').value="Submit";
-        document.getElementById('form_courseNOM').value='';
-        //this.setState({
-          //activeTab:1,
-          //moduleValue:''
-        //})
-        //window.location.reload();
+            })
+          }
         })
         .catch((error) => {
           console.log(error)
@@ -650,7 +653,7 @@ export default class Courses extends Component {
         })
     }
 
-     const CourseEdit = () => {
+     const CourseEdit = async() => {
      
       document.getElementById('edit_courseForm_submit').disabled = true;
       document.getElementById('edit_courseForm_submit').innerHTML = 'Processing...';
@@ -658,6 +661,7 @@ export default class Courses extends Component {
       let postData = {}
       postData.university = this.state.currentEditCourseInfo.university;
       postData.course_type = this.state.currentEditCourseInfo.course_type;
+      postData.course_image= this.state.currentEditCourseInfo.course_image;
       postData.course_name=document.getElementById('edit_form_courseName').value;
       postData.trainer=document.getElementById('edit_form_courseTrainer').value;
       postData.competency=document.getElementById('edit_form_courseCompetency').value;
@@ -785,7 +789,7 @@ export default class Courses extends Component {
 
      
       API2
-        .patch(`/course/` + this.state.currentEditCourseInfo._id, {
+      .patch(`/course/` + this.state.currentEditCourseInfo._id, {
       "course_name" : document.getElementById('edit_form_courseName').value,
       "trainer" : document.getElementById('edit_form_courseTrainer').value,
       "competency" :document.getElementById('edit_form_courseCompetency').value,
@@ -801,7 +805,7 @@ export default class Courses extends Component {
       "university" : postData.university,
       "course_type" : postData.course_type,
       "is_private" :  document.getElementById('edit_form_privacy').value === 'Yes',
-     "course_image" : postData.course_image,
+      "course_image" : postData.course_image,
       "start_date" :document.getElementById('edit_form_startDate').value,
       "end_date" :document.getElementById('edit_form_endDate').value, 
       "time_duration" : document.getElementById('form_courseDuration').value,
@@ -811,24 +815,29 @@ export default class Courses extends Component {
         })
         .then(res => {
           console.log(res);
-          document.getElementById('edit_courseForm_submit').disabled = false;
-          document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
-          document.getElementById("editCourseForm").reset();
-          // this.getDepartmentNames()
           postFile(uploads)
-          if (document.getElementById('form_editImage').files[0]) {
-            postCourseImage(document.getElementById('edit-form_university').value, document.getElementById('edit_form_courseName').value, document.getElementById('form_editImage').files[0])
-          }
-          this.getCoursesData()
-          let temp=[];
-          this.setState({
-            currentEditCourseInfoFetched:false,
-            currentEditCourseInfo:temp
-          })
-          this.setState({ activeTab: 1 })
+          if (document.getElementById('form_edit_Image').files[0]) {
+            console.log("file name:",document.getElementById('form_edit_Image').files[0])
+            console.log("course name:", document.getElementById('edit_form_courseName').value);
+            console.log("university name:",postData.university);
+            postCourseImage(postData.university, document.getElementById('edit_form_courseName').value, document.getElementById('form_edit_Image').files[0])
+            .then((data)=>{
+                document.getElementById('edit_courseForm_submit').disabled = false;
+                document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
+                this.getCoursesData()
+               let temp=[];
+                this.setState({
+                  currentEditCourseInfoFetched:false,
+                  currentEditCourseInfo:temp
+                })
+                this.setState({ activeTab: 1 })
 
-        })
-        .catch((error) => {
+            })
+                
+          console.log("should print after course image response on 399 & 825");
+         }
+      })
+      .catch((error) => {
           this.getCoursesData()
         })
       }
@@ -2634,7 +2643,11 @@ export default class Courses extends Component {
                                           Course Image
                                    </label>
                                  <div className="col-md-8">
-                                 <input type="file" name="" id="form_editImage" />
+                                 <input type="file" name="" id="form_edit_Image" 
+                                 onChange={(e)=>{
+                                    console.log(e);
+                                    console.log(e.target.files[0])
+                                 }}/>
                                      <small id="fileHelp" className="form-text text-muted">
                                     Please upload image here
                                       </small>
@@ -2747,13 +2760,12 @@ export default class Courses extends Component {
                                   {module[id].module_type=="Recorded"?
                                      <div id={'RecordedLectureDetails' + modules}>
                                     <div className="form-group row">
-                                      <label className="col-md-3 col-form-label">
+                                      <label className="col-md-3 col-form-label" style={{display:'none'}}>
                                         Resource Lecture
                                       </label>
                                       <div className="col-md-7">
-                                        <input type="file" name="" id={"form_editModuleLecture" + id}/>
-                                        <small id="fileHelp" className="form-text text-muted">
-                                          Resource file
+                                        <input type="file" name="" id={"form_editModuleLecture" + id} style={{display:'none'}}/>
+                                        <small id="fileHelp" className="form-text text-muted" style={{display:'none'}}>
                                         </small>
                                       </div>
                                     </div>
