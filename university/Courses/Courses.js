@@ -650,12 +650,8 @@ export default class Courses extends Component {
         }
 
 
-        if (tempModuleType === "Recorded" && !document.getElementById('form_editModuleLecture'+i).files) {
-        console.log(this.state.allModules[i].upload_lecture)
-        tempModule.upload_lecture=this.state.allModules[i].upload_lecture;
-        }
 
-        else if (tempModuleType === "Recorded" && document.getElementById('form_editModuleLecture'+i).files[0]) {
+       if (tempModuleType === "Recorded" && document.getElementById('form_editModuleLecture'+i).files[0]) {
 
           let temp_uploadData = {}
           temp_uploadData.inputId = 'form_editModuleLecture' + i;
@@ -2677,21 +2673,7 @@ export default class Courses extends Component {
                                     </div>
                                   </div>
                                   
-                                  {module[id].module_type=="Recorded"?
-                                     <div id={'RecordedLectureDetails' + modules}>
-                                    <div className="form-group row">
-                                      <label className="col-md-3 col-form-label">
-                                        Resource Lecture
-                                      </label>
-                                      <div className="col-md-7">
-                                        <input type="file" name="" id={"form_editModuleLecture" + id}/>
-                                        <small id="fileHelp" className="form-text text-muted">
-                                          Resource file
-                                        </small>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  :""}
+                                  
                                 {module[id].module_type=="Live"?
                                   <div id={'LiveLectureDetails' + modules}>
                                     <div className="form-group row">
