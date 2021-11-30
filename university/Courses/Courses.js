@@ -403,6 +403,10 @@ export default class Courses extends Component {
     }
 
     const addCourseSubmit = () => {
+
+      document.getElementById('addCourseSubmitBtn').disabled=true;
+      document.getElementById('addCourseSubmitBtn').value="Processing";
+
       let postData = {}
       postData.course_name = document.getElementById('form_courseName').value;
       postData.trainer = document.getElementById('form_courseTrainer').value;
@@ -427,8 +431,29 @@ export default class Courses extends Component {
       postData.time_duration = document.getElementById('form_courseDuration').value;
       postData.price = document.getElementById('form_coursePrice').value;
       postData.no_of_modules = document.getElementById('form_courseNOM').value;
+      if(postData.course_name==''){
+        alert("Course name cannot be empty");
+        document.getElementById('addCourseSubmitBtn').disabled=false;
+      document.getElementById('addCourseSubmitBtn').value="Submit";
+      }else if(postData.competency==''){
+        alert('Competency cannot be empty');
+        document.getElementById('addCourseSubmitBtn').disabled=false;
+      document.getElementById('addCourseSubmitBtn').value="Submit";
+      }else if(postData.university==''){
+        alert('University name cannot be empty')
+        document.getElementById('addCourseSubmitBtn').disabled=false;
+      document.getElementById('addCourseSubmitBtn').value="Submit";
+      }else if(postData.category===''){
+        alert("Category cannot be empty")
+        document.getElementById('addCourseSubmitBtn').disabled=false;
+      document.getElementById('addCourseSubmitBtn').value="Submit";
+      }else if(postData.trainer==''){
+        alert("Trainer name cannot be empty")
+        document.getElementById('addCourseSubmitBtn').disabled=false;
+      document.getElementById('addCourseSubmitBtn').value="Submit";
+      }else{
 
-      let modules = []
+        let modules = []
 
       let uploads = []
 
@@ -488,12 +513,23 @@ export default class Courses extends Component {
           if (document.getElementById('form_CourseImage').files[0]) {
             postCourseImage(document.getElementById('form_courseUniversity').value, document.getElementById('form_courseName').value, document.getElementById('form_CourseImage').files[0])
           }
-          this.getCoursesData()
+
+      this.getCoursesData()
+      document.getElementById('addCourseSubmitBtn').disabled=false;
+      document.getElementById('addCourseSubmitBtn').value="Submit";
+        document.getElementById('form_courseNOM').value='';
+        this.setState({
+          activeTab:1,
+          moduleValue:''
+        })
+        window.location.reload();
         })
         .catch((error) => {
           console.log(error)
         })
-    }
+      }
+      
+}
     const clearForm=()=>{
     document.getElementById('form_courseName').value="";
      document.getElementById('form_courseTrainer').value="";
@@ -621,7 +657,32 @@ export default class Courses extends Component {
       let postData = {}
       postData.university = this.state.currentEditCourseInfo.university;
       postData.course_type = this.state.currentEditCourseInfo.course_type;
-      console.log("postData:",postData)
+      postData.course_name=document.getElementById('edit_form_courseName').value;
+      postData.trainer=document.getElementById('edit_form_courseTrainer').value;
+      postData.competency=document.getElementById('edit_form_courseCompetency').value;
+      postData.category=document.getElementById('edit_form_courseCategory').value;
+      if(postData.course_name===''){
+        alert("Course name cannot be empty!")
+      document.getElementById('edit_courseForm_submit').disabled = false;
+      document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
+      }
+      if(postData.trainer===''){
+        alert("Trainer name cannot be empty!")
+        document.getElementById('edit_courseForm_submit').disabled = false;
+      document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
+      }
+      if(postData.competency===''){
+        alert("Competency cannot be empty!")
+        document.getElementById('edit_courseForm_submit').disabled = false;
+      document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
+      }
+      if(postData.category===''){
+        alert("Category cannot be empty!")
+        document.getElementById('edit_courseForm_submit').disabled = false;
+      document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
+      }
+      else{
+        console.log("postData:",postData)
 
      let modules = []
 
@@ -763,6 +824,8 @@ export default class Courses extends Component {
         .catch((error) => {
           this.getCoursesData()
         })
+      }
+      
     }
 
     return (
