@@ -518,11 +518,11 @@ export default class Courses extends Component {
       document.getElementById('addCourseSubmitBtn').disabled=false;
       document.getElementById('addCourseSubmitBtn').value="Submit";
         document.getElementById('form_courseNOM').value='';
-        this.setState({
-          activeTab:1,
-          moduleValue:''
-        })
-        window.location.reload();
+        //this.setState({
+          //activeTab:1,
+          //moduleValue:''
+        //})
+        //window.location.reload();
         })
         .catch((error) => {
           console.log(error)
@@ -641,8 +641,9 @@ export default class Courses extends Component {
                 noOfEditModules:tempAllModules.length
               })
           }
-          console.log("temp all modules:", this.state.allModules);
-          console.log("Object keys:",Object.values(this.state.currentEditCourseInfo['modules']));
+          for(let i=0;i<this.state.allModules.length;i++){
+            console.log(this.state.allModules[i])
+          }
         })
         .catch(err => {
           console.log(err)
@@ -712,8 +713,10 @@ export default class Courses extends Component {
 
 
 
-       if (tempModuleType === "Recorded" && document.getElementById('form_editModuleLecture'+i).files[0]) {
-
+       if (tempModuleType === "Recorded" ){
+         console.log("before condition:",this.state.allModules[i].upload_lecture)
+       if(document.getElementById('form_editModuleLecture'+i).files[0]) {
+         console.log("there is something on this input field");
           let temp_uploadData = {}
           temp_uploadData.inputId = 'form_editModuleLecture' + i;
           temp_uploadData.universityName = this.state.currentEditCourseInfo.university;
@@ -723,12 +726,16 @@ export default class Courses extends Component {
           temp_uploadData.course_image = false;
 
           uploads.push(temp_uploadData)
+        }else{
+          console.log("nothing on the input field")
+          console.log(this.state.allModules[i].upload_lecture)
+          tempModule.upload_lecture=this.state.allModules[i].upload_lecture;
         }
-        
+       }  
         else if (tempModuleType === "Live") {
           tempModule.zoom_link = document.getElementById('form_editModuleZoomLink' + i).value;
         }
-
+        console.log(tempModule);
         modules.push(tempModule)
        
       }
@@ -2736,6 +2743,22 @@ export default class Courses extends Component {
                                     </div>
                                   </div>
                                   
+                                
+                                  {module[id].module_type=="Recorded"?
+                                     <div id={'RecordedLectureDetails' + modules}>
+                                    <div className="form-group row">
+                                      <label className="col-md-3 col-form-label">
+                                        Resource Lecture
+                                      </label>
+                                      <div className="col-md-7">
+                                        <input type="file" name="" id={"form_editModuleLecture" + id}/>
+                                        <small id="fileHelp" className="form-text text-muted">
+                                          Resource file
+                                        </small>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  :""}  
                                   
                                 {module[id].module_type=="Live"?
                                   <div id={'LiveLectureDetails' + modules}>
