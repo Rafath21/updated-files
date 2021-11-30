@@ -25,7 +25,7 @@ export default class Courses extends Component {
       studentDataFetched:false,
       filteredCoursesData: [],
       coursesDataFetched: false,
-      allModules:[], //modules to be displayed when on edit page
+      allModules:[], //previous modules to be displayed when on edit page
       noOfEditModules:'', //no. of modules on edit page
       addedModules:[],//modules that are being added on the edit page
       competencies: [],
@@ -571,20 +571,20 @@ export default class Courses extends Component {
     }
 
     const  addModuleClicked=(event)=>{
-          let tempallModules=this.state.addedModules;
+          let tempaddedModules=this.state.addedModules;
           let obj={};
-          tempallModules.push(obj);
+          tempaddedModules.push(obj);
           this.setState({
-            addedModules:tempallModules,
+            addedModules:tempaddedModules,
           })
+           let temp=this.state.noOfEditModules+this.state.addedModules.length;
+          this.setState({
+         noOfEditModules:temp
+       })
       
     }
     const onEditClicked = (id) => {
       console.log(id);
-      //let tempArr=[]; //clearing previous information
-      //this.setState({
-        //currentEditCourseInfo:tempArr
-      //})
       API2.get('/course/' + id, {})
         .then(res => {
           console.log(res.data.result)
@@ -614,6 +614,7 @@ export default class Courses extends Component {
     }
 
      const CourseEdit = () => {
+     
       document.getElementById('edit_courseForm_submit').disabled = true;
       document.getElementById('edit_courseForm_submit').innerHTML = 'Processing...';
 
@@ -626,7 +627,7 @@ export default class Courses extends Component {
 
       let uploads = []
 
-       for (let i = 0; i < this.state.noOfEditModules; i++) {
+       for (let i = 0; i <this.state.allModules.length; i++) {
         let tempModule = {}
         let tempModuleType = document.getElementById('form_editModuleLectureType' + i).value;
         tempModule.module_name = document.getElementById('form_editModuleName' + i).value
@@ -648,7 +649,13 @@ export default class Courses extends Component {
           uploads.push(temp_uploadData)
         }
 
-        if (tempModuleType === "Recorded") {
+
+        if (tempModuleType === "Recorded" && !document.getElementById('form_editModuleLecture'+i).files) {
+        console.log(this.state.allModules[i].upload_lecture)
+        tempModule.upload_lecture=this.state.allModules[i].upload_lecture;
+        }
+
+        else if (tempModuleType === "Recorded" && document.getElementById('form_editModuleLecture'+i).files[0]) {
 
           let temp_uploadData = {}
           temp_uploadData.inputId = 'form_editModuleLecture' + i;
@@ -660,6 +667,7 @@ export default class Courses extends Component {
 
           uploads.push(temp_uploadData)
         }
+        
         else if (tempModuleType === "Live") {
           tempModule.zoom_link = document.getElementById('form_editModuleZoomLink' + i).value;
         }
@@ -1478,7 +1486,7 @@ export default class Courses extends Component {
                                       Date
                                   </label>
                                     <div className="col-md-7">
-                                      <input t nype="date" className="form-control" id={"form_CourseModuleDate" + id} />
+                                      <input type="date" className="form-control" id={"form_CourseModuleDate" + id} />
                                     </div>
                                   </div>
 
@@ -2542,20 +2550,18 @@ export default class Courses extends Component {
                                 <div className="col-md-6 col-sm-12">
                                   <div className="form-group">
                                     <label>Start Date</label>
-                                    {
-                                      console.log(new Date(this.state.currentEditCourseInfo['start_date']).toJSON())
-                                    }
-                                    <input type="date" className="form-control" id="edit_form_startDate" defaultValue={new Date(this.state.currentEditCourseInfo['start_date']).toDateString()} />
+                                  
+                                    <input type="date" className="form-control" id="edit_form_startDate" 
+                                    defaultValue={(this.state.currentEditCourseInfo['start_date'])?.substring(0,10)} />
                                   </div>
                                 </div>
 
                                 <div className="col-md-6 col-sm-12">
                                   <div className="form-group">
                                     <label>End Date</label>
-                                    {
-                                      console.log(new Date(this.state.currentEditCourseInfo['end_date']).toJSON())
-                                    }
-                                    <input type="date" className="form-control" id="edit_form_endDate" defaultValue={new Date(this.state.currentEditCourseInfo['end_date']).toDateString()} />
+                                   
+                                    <input type="date" className="form-control" id="edit_form_endDate" 
+                                    defaultValue={(this.state.currentEditCourseInfo['end_date'])?.substring(0,10)} />
                                   </div>
                                 </div>
                                   <label className="col-md-3 col-form-label">
@@ -2670,14 +2676,15 @@ export default class Courses extends Component {
                                       </select>
                                     </div>
                                   </div>
-                                    {module[id].module_type=="Recorded"?
+                                  
+                                  {module[id].module_type=="Recorded"?
                                      <div id={'RecordedLectureDetails' + modules}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
                                         Resource Lecture
                                       </label>
                                       <div className="col-md-7">
-                                        <input type="file" name="" id={"form_editModuleLecture" + id} disabled/>
+                                        <input type="file" name="" id={"form_editModuleLecture" + id}/>
                                         <small id="fileHelp" className="form-text text-muted">
                                           Resource file
                                         </small>
@@ -2685,15 +2692,14 @@ export default class Courses extends Component {
                                     </div>
                                   </div>
                                   :""}
-                                  
                                 {module[id].module_type=="Live"?
                                   <div id={'LiveLectureDetails' + modules}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
-                                        Zoom Link
+                                       Edit Zoom Link
                                     </label>
                                       <div className="col-md-7">
-                                        <input type="text" className="form-control" id={"form_editModuleZoomLink" + id} defaultValue={module[id].zoom_link} disabled/>
+                                        <input type="text" className="form-control" id={"form_editModuleZoomLink" + id} defaultValue={module[id].zoom_link}/>
                                       </div>
                                     </div>
                                     <div className="form-group row">
