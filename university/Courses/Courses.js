@@ -208,34 +208,6 @@ export default class Courses extends Component {
         console.log(error)
       })
   }
-  getEnrolledCourses() {
-
-   /* const user_id = localStorage.getItem('user_id');
-    API
-      .get(`/user/${user_id}`)
-      .then(res => {
-        let tempEnrolledCourses = []
-        /* let tempEnrolledWithCompleted = [] */
-        //res.data.result.courses.forEach(el => {
-          //tempEnrolledCourses.push(el['course_id']);
-          /* 
-                      let tempEnrollWithCompleted = {}
-                      tempEnrollWithCompleted[el['course_id']]  =  el['is_completed'];
-                      tempEnrolledWithCompleted.push(tempEnrollWithCompleted) */
-
-        //})
-        //this.setState({
-          //enrolledCourses: tempEnrolledCourses,
-          /* enrolledAndCompleted : tempEnrolledWithCompleted */
-        /*})
-      })
-      .catch((error) => {
-        console.log(error)
-      })*/
-
-  }
-
-
   componentDidMount() {
     this.getCategoryData()
     this.getUniversityNames()
@@ -270,8 +242,8 @@ export default class Courses extends Component {
         this.setState({ showModules: false })
       }
     }
-    const notify =()=>{
-    toast.success("Course added ✅");
+    const notify =(msg)=>{
+    toast.success(msg);
   };
     const getStudentFilteredData=(students)=>{
       let tempFilteredStudentData=[];
@@ -285,42 +257,6 @@ export default class Courses extends Component {
           filteredStudentData:tempFilteredStudentData
         })
     }
-
-    const LectureTypeSelected = (event) => {
-      let module=event.target.attributes.getNamedItem("data-module").value
-      if (event.target.value === "Live") {
-        document.getElementById('RecordedLectureDetails' + module).style.display = 'none'
-        document.getElementById('LiveLectureDetails' + module).style.display = 'contents'
-      }
-      if (event.target.value === "Recorded") {
-        document.getElementById('LiveLectureDetails' + module).style.display = 'none'
-        document.getElementById('RecordedLectureDetails' + module).style.display = 'contents'
-      }
-      if (event.target.value === "Classroom") {
-        document.getElementById('LiveLectureDetails' + module).style.display = 'none'
-        document.getElementById('RecordedLectureDetails' + module).style.display = 'none'
-      }
-    }
-     const addNewLectureTypeSelected = (event) => {
-
-      let module=event.target.attributes.getNamedItem("data-add-module").value
-      
-      if (event.target.value === "Live") {
-        document.getElementById('addRecordedLectureDetails' + module).style.display = 'none'
-        document.getElementById('addLiveLectureDetails' + module).style.display = 'contents'
-      }
-      if (event.target.value === "Recorded") {
-        document.getElementById('addLiveLectureDetails' + module).style.display = 'none'
-        document.getElementById('addRecordedLectureDetails' + module).style.display = 'contents'
-      }
-      if (event.target.value === "Classroom") {
-        document.getElementById('addLiveLectureDetails' + module).style.display = 'none'
-        document.getElementById('addRecordedLectureDetails' + module).style.display = 'none'
-      }
-    }
-
-
-
     const postFile =async (uploads) => {
       console.log("in post file");
       uploads.forEach(async(el) => {
@@ -437,46 +373,17 @@ export default class Courses extends Component {
       }else{
 
       let modules = []
-
-      let uploads = []
-
       for (let i = 0; i < document.getElementById('form_courseNOM').value; i++) {
         let tempModule = {}
-        let tempModuleType = document.getElementById('form_CourseModuleLectureType' + i).value;
         tempModule.module_name = document.getElementById('form_CourseModuleName' + i).value
         tempModule.module_date = document.getElementById('form_CourseModuleDate' + i).value;
         tempModule.time_limit = document.getElementById('form_CourseModuleTimeLimit' + i).value;
         tempModule.module_reminder = document.getElementById('form_CourseModuleReminder' + i).value;
-        tempModule.module_type = tempModuleType;
-        if (document.getElementById('form_CourseModuleResource' + i).files[0]) {
-          let temp_uploadData = {}
-          temp_uploadData.inputId = 'form_CourseModuleResource' + i;
-          temp_uploadData.universityName = document.getElementById('form_courseUniversity').value;
-          temp_uploadData.courseName = document.getElementById('form_courseName').value;
-          temp_uploadData.courseModuleName = document.getElementById('form_CourseModuleName' + i).value;
-          temp_uploadData.uploadType = 'resource';
-          temp_uploadData.course_image = false;
+        tempModule.resources=document.getElementById('form_CourseModuleResource1'+i).value;
+        tempModule.upload_lecture=document.getElementById('form_CourseModuleResource2'+i).value;
+        tempModule.zoom_link=document.getElementById('form_CourseModuleResource3'+i).value;
 
-          uploads.push(temp_uploadData)
-        }
-
-        if (tempModuleType === "Recorded") {
-          let temp_uploadData = {}
-          temp_uploadData.inputId = 'form_CourseModuleLecture' + i;
-          console.log(temp_uploadData.inputId);
-          temp_uploadData.universityName = document.getElementById('form_courseUniversity').value;
-          temp_uploadData.courseName = document.getElementById('form_courseName').value;
-          temp_uploadData.courseModuleName = document.getElementById('form_CourseModuleName' + i).value;
-          temp_uploadData.uploadType = 'lecture';
-          temp_uploadData.course_image = false;
-
-          uploads.push(temp_uploadData)
-        }
-        else if (tempModuleType === "Live") {
-          tempModule.zoom_link = document.getElementById('form_CourseModuleZoomLink' + i).value;
-        }
-
-      modules.push(tempModule)
+        modules.push(tempModule)
       }
       postData.modules = modules;
 
@@ -484,10 +391,6 @@ export default class Courses extends Component {
       API2
         .post(`/course`, postData)
         .then(res => {
-            console.log("response status:",res.status)
-            if(uploads.length>0){
-            postFile(uploads)
-            .then(()=>{
                 if (document.getElementById('form_CourseImage').files[0]) {
                 postCourseImage(postData.university, postData.course_name, document.getElementById('form_CourseImage').files[0])
                 .then(()=>{
@@ -497,44 +400,17 @@ export default class Courses extends Component {
               else{
                 resetAfterAdd();
               }
-            })
-            }else{
-               if (document.getElementById('form_CourseImage').files[0]) {
-                postCourseImage(postData.university, postData.course_name, document.getElementById('form_CourseImage').files[0])
-                .then(()=>{
-                  resetAfterAdd();
-                })
-            }
-            else{
-              resetAfterAdd();
-            }
-          }
-           /* postFile(uploads)
-            //.then(()=>{
-                if (document.getElementById('form_CourseImage').files[0]) {
-                console.log("university name:",postData.university)
-                console.log("course name:",postData.course_name);
-                console.log("file to be uploaded:", document.getElementById('form_CourseImage').files[0])
-                postCourseImage(postData.university, postData.course_name, document.getElementById('form_CourseImage').files[0])
-                .then(()=>{
-                     resetAfterAdd();
-                      //window.location.reload();
-                  })
-                }else{
-                     resetAfterAdd();
-                }
-
-            //})*/
           
         })
         .catch((error) => {
           console.log(error)
+        document.getElementById('addCourseSubmitBtn').disabled=false;
         })
       }
       
 }
     const resetAfterAdd=()=>{
-        notify();
+        notify("Course Added ✅");
         document.getElementById('addCourseSubmitBtn').disabled=false;
         document.getElementById('addCourseSubmitBtn').value="Submit";
         document.getElementById('form_courseNOM').value='';
@@ -548,15 +424,18 @@ export default class Courses extends Component {
         })
     }
     const resetAfterEdit=()=>{
+        notify("Course Updated ✅");
        document.getElementById('edit_courseForm_submit').disabled = false;
        document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
-       this.getCoursesData()
       let temp=[];
        this.setState({
          currentEditCourseInfoFetched:false,
          currentEditCourseInfo:temp
        })
-       this.setState({ activeTab: 1 })
+       this.getCoursesData()
+       setTimeout(()=>{
+        window.location.reload();
+       },2000)
                   
     }
     const onFilter = (val) => {
@@ -675,102 +554,32 @@ export default class Courses extends Component {
 
      let modules = []
 
-      let uploads = []
 
        for (let i = 0; i <this.state.allModules.length; i++) {
         let tempModule = {}
-        let tempModuleType = document.getElementById('form_editModuleLectureType' + i).value;
         tempModule.module_name = document.getElementById('form_editModuleName' + i).value
         tempModule.module_date = document.getElementById('form_editModuleDate' + i).value;
         tempModule.time_limit = document.getElementById('form_editModuleTimeLimit' + i).value;
         tempModule.module_reminder = document.getElementById('form_editModuleReminder' + i).value;
-        tempModule.module_type = tempModuleType;
+        tempModule.resources=document.getElementById('form_editModuleResource1'+i).value;
+        tempModule.upload_lecture=document.getElementById('form_editModuleResource2'+i).value;
+        tempModule.zoom_link=document.getElementById('form_editModuleResource3'+i).value;
 
-        if (document.getElementById('form_editModuleResource' + i).files[0]) {
-          console.log("something on the module resource")
-          let temp_uploadData = {}
-          temp_uploadData.inputId = 'form_editModuleResource' + i;
-          temp_uploadData.universityName = this.state.currentEditCourseInfo.university;
-
-          temp_uploadData.courseName = document.getElementById('edit_form_courseName').value;
-          temp_uploadData.courseModuleName = document.getElementById('form_editModuleName' + i).value;
-          temp_uploadData.uploadType = 'resource';
-          temp_uploadData.course_image = false;
-
-          uploads.push(temp_uploadData)
-        }else{
-          console.log("nothing on the module resource")
-          console.log("resource is:",this.state.allModules[i].resources)
-          tempModule.resources=this.state.allModules[i].resources;
-        }
-
-      if (tempModuleType === "Recorded" ){
-         console.log("before condition:",this.state.allModules[i].upload_lecture)
-       if(document.getElementById('form_editModuleLecture'+i).files[0]) {
-         console.log("there is something on this input field");
-          let temp_uploadData = {}
-          temp_uploadData.inputId = 'form_editModuleLecture' + i;
-          temp_uploadData.universityName = this.state.currentEditCourseInfo.university;
-          temp_uploadData.courseName = document.getElementById('edit_form_courseName').value;
-          temp_uploadData.courseModuleName = document.getElementById('form_editModuleName' + i).value;
-          temp_uploadData.uploadType = 'lecture';
-          temp_uploadData.course_image = false;
-
-          uploads.push(temp_uploadData)
-        }else{
-          console.log("nothing on the input field")
-          console.log(this.state.allModules[i].upload_lecture)
-          tempModule.upload_lecture=this.state.allModules[i].upload_lecture;
-        }
-       }  
-        else if (tempModuleType === "Live") {
-          tempModule.zoom_link = document.getElementById('form_editModuleZoomLink' + i).value;
-        }
-        console.log(tempModule);
         modules.push(tempModule)
-       
-      }
+       }
 
        for (let i = 0; i < this.state.addedModules.length; i++) {
         let tempModule = {}
-        let tempModuleType = document.getElementById('form_addModuleLectureType' + i).value;
         tempModule.module_name = document.getElementById('form_addModuleName' + i).value
         tempModule.module_date = document.getElementById('form_addModuleDate' + i).value;
         tempModule.time_limit = document.getElementById('form_addModuleTimeLimit' + i).value;
         tempModule.module_reminder = document.getElementById('form_addModuleReminder' + i).value;
-        tempModule.module_type = tempModuleType;
+        tempModule.resources=document.getElementById('form_addModuleResource1'+i).value;
+        tempModule.upload_lecture=document.getElementById('form_addModuleResource2'+i).value;
+        tempModule.zoom_link=document.getElementById('form_addModuleResource3'+i).value;
 
-        if (document.getElementById('form_addModuleResource' + i).files[0]) {
-          let temp_uploadData = {}
-          temp_uploadData.inputId = 'form_addModuleResource' + i;
-          temp_uploadData.universityName = this.state.currentEditCourseInfo.university;
-
-          temp_uploadData.courseName = document.getElementById('edit_form_courseName').value;
-          temp_uploadData.courseModuleName = document.getElementById('form_addModuleName' + i).value;
-          temp_uploadData.uploadType = 'resource';
-          temp_uploadData.course_image = false;
-
-          uploads.push(temp_uploadData)
-        }
-
-        if (tempModuleType === "Recorded") {
-
-          let temp_uploadData = {}
-          temp_uploadData.inputId = 'form_addModuleLecture' + i;
-          temp_uploadData.universityName = this.state.currentEditCourseInfo.university;
-          temp_uploadData.courseName = document.getElementById('edit_form_courseName').value;
-          temp_uploadData.courseModuleName = document.getElementById('form_addModuleName' + i).value;
-          temp_uploadData.uploadType = 'lecture';
-          temp_uploadData.course_image = false;
-
-          uploads.push(temp_uploadData)
-        }
-        else if (tempModuleType === "Live") {
-          tempModule.zoom_link = document.getElementById('form_addModuleZoomLink' + i).value;
-        }
-
+     
         modules.push(tempModule)
-       
       }
       postData.modules = modules;
 
@@ -802,11 +611,7 @@ export default class Courses extends Component {
         })
         .then(res => {
           console.log(res);
-          //postFile(uploads)
-          if(uploads.length()>0){
-            postFile(uploads)
-            .then(()=>{
-               if (document.getElementById('form_edit_Image').files[0]) {
+            if (document.getElementById('form_edit_Image').files[0]) {
             console.log("file name:",document.getElementById('form_edit_Image').files[0])
             console.log("course name:", document.getElementById('edit_form_courseName').value);
             console.log("university name:",postData.university);
@@ -817,20 +622,11 @@ export default class Courses extends Component {
             }else{
               resetAfterEdit();
             }
-            })
-          }else{
-              if (document.getElementById('form_edit_Image').files[0]) {
-            postCourseImage(postData.university, document.getElementById('edit_form_courseName').value, document.getElementById('form_edit_Image').files[0])
-            .then((data)=>{
-                resetAfterEdit();
-              })
-            }else{
-              resetAfterEdit();
-            }
-          }
       })
       .catch((error) => {
           this.getCoursesData()
+         document.getElementById('edit_courseForm_submit').disabled = false;
+
         })
       }
       
@@ -1536,17 +1332,6 @@ export default class Courses extends Component {
                                     </div>
                                   </div>
 
-                                  <div className="form-group row">
-                                    <label className="col-md-3 col-form-label">
-                                      Resources
-                                  </label>
-                                    <div className="col-md-7">
-                                      <input type="file" name="" id={"form_CourseModuleResource" + id} />
-                                      <small id="fileHelp" className="form-text text-muted">
-                                        Please upload material
-                                    </small>
-                                    </div>
-                                  </div>
 
                                   <div className="form-group row">
                                     <label className="col-md-3 col-form-label">
@@ -1577,69 +1362,34 @@ export default class Courses extends Component {
                                     </div>
                                   </div>
 
-                                  <div className="form-group row">
-                                    <label className="col-md-3 col-form-label">
-                                      Lecture Type
-                                  </label>
-                                    <div className="col-md-7">
-                                      <select
-                                        className="form-control input-height"
-                                        name="department"
-                                        data-module={modules}
-                                        onChange={(event) => LectureTypeSelected(event)}
-                                        id={"form_CourseModuleLectureType" + id}
-                                      >
-                                        <option defaultValue>Select Lecture Type</option>
-                                        <option value="Recorded">Recorded</option>
-                                        <option value="Live">Live</option>
-                                        <option value="Classroom">Classroom</option>
-                                      </select>
-                                    </div>
-                                  </div>
 
-                                  <div id={'RecordedLectureDetails' + modules} style={{ display: 'none' }}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
-                                        Upload Lecture
+                                      Resource Link 1
                                       </label>
                                       <div className="col-md-7">
-                                        <input type="file" name="" id={"form_CourseModuleLecture" + id} />
-                                        <small id="fileHelp" className="form-text text-muted">
-                                          Please upload lecture
-                                        </small>
+                                        <input type="text" name=""
+                                        className="form-control" id={"form_CourseModuleResource1" + id} />
                                       </div>
                                     </div>
-                                  </div>
 
-                                  <div id={'LiveLectureDetails' + modules} style={{ display: 'none' }}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
-                                        Zoom Link
+                                        Resource Link 2
                                     </label>
                                       <div className="col-md-7">
-                                        <input type="text" className="form-control" id={"form_CourseModuleZoomLink" + id} />
+                                        <input type="text" className="form-control" id={"form_CourseModuleResource2" + id} />
                                       </div>
                                     </div>
 
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
-                                        Repeat Option
-                                      </label>
+                                        Resource Link 3
+                                    </label>
                                       <div className="col-md-7">
-                                        <select
-                                          className="form-control input-height"
-                                          name="department"
-                                          id={"form_CourseModuleRepeatOption" + id}
-                                        >
-                                          <option value="Category 1">Never</option>
-                                          <option value="Category 2">Daily</option>
-                                          <option value="Category 2">Weekly</option>
-                                          <option value="Category 2">Monthly</option>
-                                          <option value="Category 3">Quarterly</option>
-                                        </select>
+                                        <input type="text" className="form-control" id={"form_CourseModuleResource3" + id} />
                                       </div>
                                     </div>
-                                  </div>
 
 
                                 </div>
@@ -2668,7 +2418,7 @@ export default class Courses extends Component {
                                       this.state.allModules.map((data,id)=>{
                                         let module=this.state.allModules;
                                                 let modules=[];
-                                                
+                                                console.log("length:",this.state.currentEditCourseInfo['modules'].length);
                                                 for(let i=1;i<=this.state.currentEditCourseInfo['modules'].length;i++){
                                                   modules.push("Module "+ i)
                                                 }
@@ -2687,18 +2437,6 @@ export default class Courses extends Component {
       
                                     <div className="col-md-7">
                                       <input type="textarea" className="form-control" id={"form_editModuleName" + id} defaultValue={module[id].module_name?module[id].module_name:""}/>
-                                    </div>
-                                  </div>
-
-                                  <div className="form-group row">
-                                    <label className="col-md-3 col-form-label">
-                                      Edit Resources
-                                  </label>
-                                    <div className="col-md-7">
-                                      <input type="file" name="" id={"form_editModuleResource" + id} />
-                                      <small id="fileHelp" className="form-text text-muted">
-                                        Edit resource material
-                                    </small>
                                     </div>
                                   </div>
 
@@ -2728,72 +2466,38 @@ export default class Courses extends Component {
                                     </div>
                                   </div>
 
-                                  <div className="form-group row">
-                                    <label className="col-md-3 col-form-label">
-                                      Lecture Type
-                                  </label>
-                                    <div className="col-md-7">
-                
-                                      <select
-                                        className="form-control input-height"
-                                        name="department"
-                                        data-edit-module={modules}
-                                        id={"form_editModuleLectureType" + id} defaultValue={module[id].module_type?module[id].module_type:""} 
-                                        
-                                      >
-                                        <option value="Recorded">Recorded</option>
-                                        <option value="Live">Live</option>
-                                        <option value="Classroom">Classroom</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                  
                                 
-                                  {module[id].module_type=="Recorded"?
-                                     <div id={'RecordedLectureDetails' + modules}>
-                                    <div className="form-group row">
-                                      <label className="col-md-3 col-form-label" style={{display:'none'}}>
-                                        Resource Lecture
-                                      </label>
-                                      <div className="col-md-7">
-                                        <input type="file" name="" id={"form_editModuleLecture" + id} />
-                                        <small id="fileHelp" className="form-text text-muted">
-                                        </small>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  :""}  
-                                  
-                                {module[id].module_type=="Live"?
-                                  <div id={'LiveLectureDetails' + modules}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
-                                       Edit Zoom Link
+                                      Edit Resource Link 1
+                                      </label>
+                                      <div className="col-md-7">
+                                        <input type="text" name="" id={"form_editModuleResource1" + id} 
+                                        className="form-control" defaultValue={
+                                          module[id].resources?module[id].resources:""}/>
+                                  
+                                      </div>
+                                    </div>
+                                  
+                                  
+                                    <div className="form-group row">
+                                      <label className="col-md-3 col-form-label">
+                                       Edit Resource Link 2
                                     </label>
                                       <div className="col-md-7">
-                                        <input type="text" className="form-control" id={"form_editModuleZoomLink" + id} defaultValue={module[id].zoom_link}/>
+                                        <input type="text" className="form-control" id={"form_editModuleResource2" + id} defaultValue={module[id].upload_lecture?module[id].upload_lecture:""}/>
                                       </div>
                                     </div>
+
+                                    
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
-                                        Repeat Option
-                                      </label>
+                                       Edit Resource Link 3
+                                    </label>
                                       <div className="col-md-7">
-                                        <select
-                                          className="form-control input-height"
-                                          name="department"
-                                          id={"form_editModuleRepeatOption" + id} disabled
-                                        >
-                                          <option value="Category 1">Never</option>
-                                          <option value="Category 2">Daily</option>
-                                          <option value="Category 2">Weekly</option>
-                                          <option value="Category 2">Monthly</option>
-                                          <option value="Category 3">Quarterly</option>
-                                        </select>
+                                        <input type="text" className="form-control" id={"form_editModuleResource3" + id} defaultValue={module[id].zoom_link?module[id].zoom_link:""}/>
                                       </div>
                                     </div>
-                                  </div>
-                                  :""}
 
                                   </div>
                               </div>
@@ -2831,19 +2535,7 @@ export default class Courses extends Component {
                                     </div>
                                   </div>
 
-                                  <div className="form-group row">
-                                    <label className="col-md-3 col-form-label">
-                                      Add Resources
-                                  </label>
-                                    <div className="col-md-7">
-                                      <input type="file" name="" id={"form_addModuleResource" + id} />
-                                      <small id="fileHelp" className="form-text text-muted">
-                                        Add resource material
-                                    </small>
-                                    </div>
-                                  </div>
-
-                                  <div className="form-group row">
+                               <div className="form-group row">
                                     <label className="col-md-3 col-form-label">
                                       Date
                                   </label>
@@ -2868,67 +2560,32 @@ export default class Courses extends Component {
                                       <input type="Date" className="form-control" id={"form_addModuleReminder" + id} />
                                     </div>
                                   </div>
-
-                                  <div className="form-group row">
-                                    <label className="col-md-3 col-form-label">
-                                      Lecture Type
-                                  </label>
-                                    <div className="col-md-7">
-                                      <select
-                                        className="form-control input-height"
-                                        name="department"
-                                        data-add-module={modules}
-                                        onChange={(event) => addNewLectureTypeSelected(event)}
-                                        id={"form_addModuleLectureType" + id} 
-                                      >
-                                        <option defaultValue>Select Lecture Type</option>
-                                        <option value="Recorded">Recorded</option>
-                                        <option value="Live">Live</option>
-                                        <option value="Classroom">Classroom</option>
-                                      </select>
-                                    </div>
-                                  </div>
-                                  <div id={'addRecordedLectureDetails' + modules}>
-                                    <div className="form-group row" style={{display:'none'}}>
-                                      <label className="col-md-3 col-form-label">
-                                        Upload Lecture
-                                      </label>
-                                      <div className="col-md-7" style={{display:'none'}}>
-                                        <input type="file" name="" id={"form_addModuleLecture" + id} />
-                                        <small id="fileHelp" className="form-text text-muted">
-                                          Please upload lecture
-                                        </small>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div id={'addLiveLectureDetails' + modules} style={{ display: 'none' }}>
                                     <div className="form-group row">
                                       <label className="col-md-3 col-form-label">
-                                        Zoom Link
-                                    </label>
-                                      <div className="col-md-7">
-                                        <input type="text" className="form-control" id={"form_addModuleZoomLink" + id} />
-                                      </div>
-                                    </div>
-                                  </div>
-                                  
-                                    <div className="form-group row" style={{display:'none'}}>
-                                      <label className="col-md-3 col-form-label">
-                                        Repeat Option
+                                      Resource Link 1
                                       </label>
                                       <div className="col-md-7">
-                                        <select
-                                          className="form-control input-height"
-                                          name="department"
-                                          id={"form_addModuleRepeatOption" + id}
-                                        >
-                                          <option value="Category 1">Never</option>
-                                          <option value="Category 2">Daily</option>
-                                          <option value="Category 2">Weekly</option>
-                                          <option value="Category 2">Monthly</option>
-                                          <option value="Category 3">Quarterly</option>
-                                        </select>
+                                        <input type="text" className="form-control" name="" id={"form_addModuleResource1" + id} />
+                                      </div>
+                                    </div>
+
+                                    <div className="form-group row">
+                                      <label className="col-md-3 col-form-label">
+                                      Resource Link 2
+                                        
+                                    </label>
+                                      <div className="col-md-7">
+                                        <input type="text" className="form-control" id={"form_addModuleResource2" + id} />
+                                      </div>
+                                    </div>
+                                  
+                                  <div className="form-group row">
+                                      <label className="col-md-3 col-form-label">
+                                      Resource Link 3
+                                        
+                                    </label>
+                                      <div className="col-md-7">
+                                        <input type="text" className="form-control" id={"form_addModuleResource3" + id} />
                                       </div>
                                     </div>
                                   </div>
@@ -2968,9 +2625,6 @@ export default class Courses extends Component {
 
 
                 }
-
-
-
               </TabPane>
             </TabContent>
           </div>
