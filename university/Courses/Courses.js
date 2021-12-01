@@ -464,7 +464,7 @@ export default class Courses extends Component {
         tempModule.time_limit = document.getElementById('form_CourseModuleTimeLimit' + i).value;
         tempModule.module_reminder = document.getElementById('form_CourseModuleReminder' + i).value;
         tempModule.module_type = tempModuleType;
-
+        tempModule.resources=this.allModules[i].resources;
         if (document.getElementById('form_CourseModuleResource' + i).files[0]) {
           let temp_uploadData = {}
           temp_uploadData.inputId = 'form_CourseModuleResource' + i;
@@ -478,9 +478,9 @@ export default class Courses extends Component {
         }
 
         if (tempModuleType === "Recorded") {
-
           let temp_uploadData = {}
           temp_uploadData.inputId = 'form_CourseModuleLecture' + i;
+          console.log(temp_uploadData.inputId);
           temp_uploadData.universityName = document.getElementById('form_courseUniversity').value;
           temp_uploadData.courseName = document.getElementById('form_courseName').value;
           temp_uploadData.courseModuleName = document.getElementById('form_CourseModuleName' + i).value;
@@ -503,7 +503,8 @@ export default class Courses extends Component {
         .then(res => {
           if(res.status==201){
             console.log("response status:",res.status)
-            postFile(uploads).then(()=>{
+            postFile(uploads)
+            //.then(()=>{
                 if (document.getElementById('form_CourseImage').files[0]) {
                 console.log("university name:",postData.university)
                 console.log("course name:",postData.course_name);
@@ -522,9 +523,20 @@ export default class Courses extends Component {
                       })
                       //window.location.reload();
                   })
+                }else{
+                      notify();
+                      clearForm();
+                      document.getElementById('addCourseSubmitBtn').disabled=false;
+                      document.getElementById('addCourseSubmitBtn').value="Submit";
+                      document.getElementById('form_courseNOM').value='';
+                      this.getCoursesData()
+                      this.setState({
+                        moduleValue:'',
+                        activeTab:1
+                      })
                 }
 
-            })
+            //})
           }
         })
         .catch((error) => {
@@ -853,7 +865,7 @@ export default class Courses extends Component {
                 <h1 className="page-title">Courses</h1>
                 <ol className="breadcrumb page-breadcrumb">
                   <li className="breadcrumb-item">
-                    Admin
+                    {localStorage.getItem('currentUser')}
                   </li>
                   <li className="breadcrumb-item active" aria-current="page">
                     Courses

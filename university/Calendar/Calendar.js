@@ -3,7 +3,6 @@ import Fullcalender from "../../common/fullcalender";
 import Modal from 'react-bootstrap/Modal'
 import MultiSelectDropdown from '../../common/MultiSelectDropdown'
 import {API , API2} from '../../../axios'
-
 export default class Calendar extends Component {
   constructor(props) {
     super(props);
@@ -14,11 +13,66 @@ export default class Calendar extends Component {
       usersDataFetched : false,
       usersValue : [],
       users_associated_events : [],
-      events : []
+      events : [],
+      userCourses:[],
+      coursesDataFetched:false,
+      coursesData: [],
     };
   }
 
+  getCoursesData() {
+    API2
+      .get(`/course`, {})
+      .then(res => {
+        this.setState({
+          coursesDataFetched: true,
+          coursesData:res.data['result']
+        })
+        if(this.state.currentUser==="Trainer"){
+          let user=JSON.parse(localStorage.getItem("user_data"))
+          let username=user['first_name']+""+user['last_name'];
+          let tempTrainersCourses=[];
+         for(let i=0;i<this.state.coursesData.length;i++){
+                if(this.state.coursesData[i]["trainer"].replace(/\s/g,'')==username){
+                                      let obj={
+                                        id:this.state.coursesData[i]._id,
+                                        title:this.state.coursesData[i].course_name,
+                                        start:this.state.coursesData[i].start_date,
+                                        url:this.state.coursesData[i].youtube_link
+                                      }
+                                      tempTrainersCourses.push(obj);
+                }
+          }
+          this.setState({
+            userCourses:tempTrainersCourses
+          })
+        }
+       
+        if(this.state.currentUser==="Student"){
+          let userid=localStorage.getItem("user_id");
+          let tempStudentCourses=[];
+          let courses=this.state.coursesData;
+           Object.keys(courses.map((key,index)=>{
+           let students=key.students;
+              if(students.includes(userid)){
+                        let obj={
+                          id:key._id,
+                          title:key.course_name,
+                          start: key.start_date,
+                          url:key.youtube_link
+                        }
+                        tempStudentCourses.push(obj)
+                 }
+            }))
+            this.setState({
+                userCourses:tempStudentCourses
+             })
+        }
   
+     }).catch((error) => {
+        console.log(error)
+      })
+  }
 
   getUserAssociatedEvents(){
     API2
@@ -26,43 +80,20 @@ export default class Calendar extends Component {
     .then(res=>{
       let tempEvents=[];
       Object.keys(res.data.map((key,index)=>{
-        console.log(key);
          if(key.users.includes(localStorage.getItem('user_id'))){
-          console.log("user is present in this:", key)
-          tempEvents.push(key);
+          let obj={
+            id:key._id,
+            title:key.event_name,
+            start:key.start_date,
+            url:key.zoom_link
+          }
+          tempEvents.push(obj);
          }
       }))
       this.setState({
         events:tempEvents
       })
     })
-      /*.get(`/user/`+localStorage.getItem('user_id'), {})
-      .then(res => {
-        this.setState({
-          users_associated_events : res.data.result.events
-        });
-        this.users_associated_events = res.data.result.events;
-        API2
-          .get(`/event`, {})
-          .then(res => {
-            let tempEvents = []
-            res.data.forEach(el =>{
-              if(this.state.users_associated_events.includes(el['id'])){
-                tempEvents.push(el)
-              }
-            })
-            this.setState({
-              events : tempEvents
-            })
-          })
-          .catch((error) => {
-              console.log(error)
-          })
-      })
-      .catch((error) => {
-          console.log(error)
-      })*/
-
   }
 
 
@@ -100,6 +131,7 @@ export default class Calendar extends Component {
     componentDidMount(){
       //get university of current user then get users from current university
       this.getUsersData();
+      this.getCoursesData();
       this.getUserAssociatedEvents();
       }
 
@@ -110,30 +142,14 @@ export default class Calendar extends Component {
     }
   render() {
     let events_prop = []
-    
-    /* events.map( data => {
-      if(event_ids.includes(data['id'])){
-        let tempEvent = {}
-        tempEvent['id'] = data['id'];
-        tempEvent['title'] = data['name'];
-        tempEvent['start'] = data['date']+'T'+data['time'];
-        tempEvent['url'] = data['zoom_link'];
-        events_prop.push(tempEvent)
-      }
-    }
-    ) */
-
-    this.state.events.map( data => {
-      console.log(data)
-        let tempEvent = {}
-        tempEvent['id'] = data['id'];
-        tempEvent['title'] = data['event_name'];
-        tempEvent['start'] = data['start_date'];
-        tempEvent['url'] = data['zoom_link'];
-        events_prop.push(tempEvent)
+     this.state.events.map( data => {
+        events_prop.push(data)
     }
     )
+    this.state.userCourses.map(data=>{
+        events_prop.push(data)
 
+    })
     const handleClose = () => {
     };
 
@@ -157,7 +173,7 @@ export default class Calendar extends Component {
       API2
       .post(`/event`, postData)
       .then(res => {
-         console.log(res)
+        console.log(res)
       })
       .catch((error) => {
           console.log(error)
@@ -258,7 +274,7 @@ export default class Calendar extends Component {
                 <h1 className="page-title">Calendar</h1>
                 <ol className="breadcrumb page-breadcrumb">
                   <li className="breadcrumb-item">
-                    <a href>Admin</a>
+                    <a href>{localStorage.getItem('currentUser')}</a>
                   </li>
                   <li className="breadcrumb-item active" aria-current="page">
                     Calendar
