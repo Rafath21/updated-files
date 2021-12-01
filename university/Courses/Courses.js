@@ -301,24 +301,6 @@ export default class Courses extends Component {
         document.getElementById('RecordedLectureDetails' + module).style.display = 'none'
       }
     }
- /*   const editLectureTypeSelected = (event) => {
-
-      let module=event.target.attributes.getNamedItem("data-edit-module").value
-      
-      if (event.target.value === "Live") {
-        document.getElementById('EditRecordedLectureDetails' + module).style.display = 'none'
-        document.getElementById('EditLiveLectureDetails' + module).style.display = 'contents'
-      }
-      if (event.target.value === "Recorded") {
-        document.getElementById('EditLiveLectureDetails' + module).style.display = 'none'
-        document.getElementById('EditRecordedLectureDetails' + module).style.display = 'contents'
-      }
-      if (event.target.value === "Classroom") {
-        document.getElementById('EditLiveLectureDetails' + module).style.display = 'none'
-        document.getElementById('EditRecordedLectureDetails' + module).style.display = 'none'
-      }
-    }*/
-
      const addNewLectureTypeSelected = (event) => {
 
       let module=event.target.attributes.getNamedItem("data-add-module").value
@@ -405,7 +387,8 @@ export default class Courses extends Component {
     const addCourseSubmit = () => {
 
       document.getElementById('addCourseSubmitBtn').disabled=true;
-      document.getElementById('addCourseSubmitBtn').value="Processing";
+      document.getElementById('addCourseSubmitBtn').value="Processing..";
+
 
       let postData = {}
       postData.course_name = document.getElementById('form_courseName').value;
@@ -501,9 +484,32 @@ export default class Courses extends Component {
       API2
         .post(`/course`, postData)
         .then(res => {
-          if(res.status==201){
             console.log("response status:",res.status)
+            if(uploads.length>0){
             postFile(uploads)
+            .then(()=>{
+                if (document.getElementById('form_CourseImage').files[0]) {
+                postCourseImage(postData.university, postData.course_name, document.getElementById('form_CourseImage').files[0])
+                .then(()=>{
+                  resetAfterAdd();
+                })
+              }
+              else{
+                resetAfterAdd();
+              }
+            })
+            }else{
+               if (document.getElementById('form_CourseImage').files[0]) {
+                postCourseImage(postData.university, postData.course_name, document.getElementById('form_CourseImage').files[0])
+                .then(()=>{
+                  resetAfterAdd();
+                })
+            }
+            else{
+              resetAfterAdd();
+            }
+          }
+           /* postFile(uploads)
             //.then(()=>{
                 if (document.getElementById('form_CourseImage').files[0]) {
                 console.log("university name:",postData.university)
@@ -511,33 +517,15 @@ export default class Courses extends Component {
                 console.log("file to be uploaded:", document.getElementById('form_CourseImage').files[0])
                 postCourseImage(postData.university, postData.course_name, document.getElementById('form_CourseImage').files[0])
                 .then(()=>{
-                      this.getCoursesData()
-                      document.getElementById('addCourseSubmitBtn').disabled=false;
-                      document.getElementById('addCourseSubmitBtn').value="Submit";
-                      document.getElementById('form_courseNOM').value='';
-                      notify();
-                      clearForm();
-                      this.setState({
-                        moduleValue:'',
-                        activeTab:1
-                      })
+                     resetAfterAdd();
                       //window.location.reload();
                   })
                 }else{
-                      notify();
-                      clearForm();
-                      document.getElementById('addCourseSubmitBtn').disabled=false;
-                      document.getElementById('addCourseSubmitBtn').value="Submit";
-                      document.getElementById('form_courseNOM').value='';
-                      this.getCoursesData()
-                      this.setState({
-                        moduleValue:'',
-                        activeTab:1
-                      })
+                     resetAfterAdd();
                 }
 
-            //})
-          }
+            //})*/
+          
         })
         .catch((error) => {
           console.log(error)
@@ -545,48 +533,32 @@ export default class Courses extends Component {
       }
       
 }
-    const clearForm=()=>{
-    document.getElementById('form_courseName').value="";
-     document.getElementById('form_courseTrainer').value="";
-    document.getElementById('form_courseCompetency').value="";
-       document.getElementById('form_courseDescription').value="";
-       document.getElementById('form_courseYoutubeLink').value="";
-       document.getElementById('form_courseAboutThisCourse').value="";
-       document.getElementById('form_courseWhoThisCourseIsFor').value="";
-       document.getElementById('form_courseRequirements').value="";
-       document.getElementById('form_courseWhyToLearn').value="";
-       document.getElementById('form_courseSkillsYouLearn').value="";
-       document.getElementById('form_courseCategory').value="";
-       document.getElementById('form_coursePaid').value = "";
-      document.getElementById('form_courseFeatured').value = "";
-      document.getElementById('form_courseUniversity').value="";
-      document.getElementById('form_courseType').value="";
-      document.getElementById('form_coursePrivate').value ='';
-      document.getElementById('form_courseStartDate').value="";
-       document.getElementById('form_courseEndDate').value="";
-      document.getElementById('form_courseDuration').value="";
-      document.getElementById('form_coursePrice').value="";
-      document.getElementById('form_courseNOM').value="";
-      for (let i = 0; i < document.getElementById('form_courseNOM').value; i++) {
-         document.getElementById('form_CourseModuleLectureType' + i).value="";
-        document.getElementById('form_CourseModuleName' + i).value=""
-        document.getElementById('form_CourseModuleDate' + i).value="";
-        document.getElementById('form_CourseModuleTimeLimit' + i).value="";
-        document.getElementById('form_CourseModuleReminder' + i).value="";
-
-        if (document.getElementById('form_CourseModuleResource' + i).files[0]) {
-          document.getElementById('form_courseUniversity').value="";
-          document.getElementById('form_courseName').value="";
-          document.getElementById('form_CourseModuleName' + i).value="";
-        }
-          document.getElementById('form_courseUniversity').value="";
-          document.getElementById('form_courseName').value="";
-          document.getElementById('form_CourseModuleName' + i).value="";
-          document.getElementById('form_CourseModuleZoomLink' + i).value="";
-
-      }
+    const resetAfterAdd=()=>{
+        notify();
+        document.getElementById('addCourseSubmitBtn').disabled=false;
+        document.getElementById('addCourseSubmitBtn').value="Submit";
+        document.getElementById('form_courseNOM').value='';
+        document.getElementById('addCourseForm').reset();
+        //clearForm();
+        this.getCoursesData()
+        this.setState({
+          moduleValue:'',
+          activeTab:1,
+          moduleHtml:[]
+        })
     }
-
+    const resetAfterEdit=()=>{
+       document.getElementById('edit_courseForm_submit').disabled = false;
+       document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
+       this.getCoursesData()
+      let temp=[];
+       this.setState({
+         currentEditCourseInfoFetched:false,
+         currentEditCourseInfo:temp
+       })
+       this.setState({ activeTab: 1 })
+                  
+    }
     const onFilter = (val) => {
       let tempFilterData = []
       let backupData = this.state.coursesData
@@ -830,37 +802,32 @@ export default class Courses extends Component {
         })
         .then(res => {
           console.log(res);
-          postFile(uploads)
-          if (document.getElementById('form_edit_Image').files[0]) {
+          //postFile(uploads)
+          if(uploads.length()>0){
+            postFile(uploads)
+            .then(()=>{
+               if (document.getElementById('form_edit_Image').files[0]) {
             console.log("file name:",document.getElementById('form_edit_Image').files[0])
             console.log("course name:", document.getElementById('edit_form_courseName').value);
             console.log("university name:",postData.university);
             postCourseImage(postData.university, document.getElementById('edit_form_courseName').value, document.getElementById('form_edit_Image').files[0])
             .then((data)=>{
-                document.getElementById('edit_courseForm_submit').disabled = false;
-                document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
-                this.getCoursesData()
-               let temp=[];
-                this.setState({
-                  currentEditCourseInfoFetched:false,
-                  currentEditCourseInfo:temp
-                })
-                this.setState({ activeTab: 1 })
-
+                resetAfterEdit();
+              })
+            }else{
+              resetAfterEdit();
+            }
             })
-                
-          console.log("should print after course image response on 399 & 825");
-         }else{
-           document.getElementById('edit_courseForm_submit').disabled = false;
-                document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
-                this.getCoursesData()
-               let temp=[];
-                this.setState({
-                  currentEditCourseInfoFetched:false,
-                  currentEditCourseInfo:temp
-                })
-                this.setState({ activeTab: 1 })
-         }
+          }else{
+              if (document.getElementById('form_edit_Image').files[0]) {
+            postCourseImage(postData.university, document.getElementById('edit_form_courseName').value, document.getElementById('form_edit_Image').files[0])
+            .then((data)=>{
+                resetAfterEdit();
+              })
+            }else{
+              resetAfterEdit();
+            }
+          }
       })
       .catch((error) => {
           this.getCoursesData()
