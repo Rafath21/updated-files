@@ -163,7 +163,7 @@ export default class CourseDetails extends Component {
                 <h1 className="page-title">Courses Details</h1>
                 <ol className="breadcrumb page-breadcrumb">
                   <li className="breadcrumb-item">
-                    <span>Admin</span>
+                    <span>{localStorage.getItem('currentUser')}</span>
                   </li>
                   <li className="breadcrumb-item">
                     <Link to="/courses">Courses</Link>
@@ -359,15 +359,15 @@ export default class CourseDetails extends Component {
                                   <div id={data['module_name'] + '_collapse'} className="moduleData" style={{ display: 'none' }}>
                                     {
                                       data['resources'] ?
-                                        <a href={data['resources']} style={{ color: 'rgb(140, 126, 126)' }} target="_blank"> Resource </a> : null
+                                        <a href={data['resources']} style={{ color: 'rgb(140, 126, 126)' }} target="_blank"> Resource 1</a> : null
                                     }
                                     {
-                                      data['module_type'] === 'Recorded' ?
-                                        <a href={data['upload_lecture']} style={{ color: 'rgb(140, 126, 126)' }} target="_blank"> <br /><br /> Lecture </a> : null
+                                      data['upload_lecture'] !=='' ?
+                                        <a href={data['upload_lecture']} style={{ color: 'rgb(140, 126, 126)' }} target="_blank"> <br /><br /> Resource 2 </a> : null
                                     }
                                     {
-                                      data['module_type'] === 'Live' ?
-                                        <a href={data['zoom_link']} style={{ color: 'rgb(140, 126, 126)' }} target="_blank"> <br /><br /> Zoom Link </a> : null
+                                      data['zoom_link'] !== '' ?
+                                        <a href={data['zoom_link']} style={{ color: 'rgb(140, 126, 126)' }} target="_blank"> <br /><br /> Resource 3 </a> : null
                                     }
 
                                   </div>
