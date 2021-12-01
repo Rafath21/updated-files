@@ -340,8 +340,9 @@ export default class Courses extends Component {
 
 
     const postFile =async (uploads) => {
+      console.log("in post file");
       uploads.forEach(async(el) => {
-        console.log(el)
+        console.log("element:",el)
         let file = document.getElementById(el.inputId).files[0];
         let data = new FormData();
         data.append('file', file);
@@ -464,7 +465,6 @@ export default class Courses extends Component {
         tempModule.time_limit = document.getElementById('form_CourseModuleTimeLimit' + i).value;
         tempModule.module_reminder = document.getElementById('form_CourseModuleReminder' + i).value;
         tempModule.module_type = tempModuleType;
-        tempModule.resources=this.allModules[i].resources;
         if (document.getElementById('form_CourseModuleResource' + i).files[0]) {
           let temp_uploadData = {}
           temp_uploadData.inputId = 'form_CourseModuleResource' + i;
@@ -715,6 +715,7 @@ export default class Courses extends Component {
         tempModule.module_type = tempModuleType;
 
         if (document.getElementById('form_editModuleResource' + i).files[0]) {
+          console.log("something on the module resource")
           let temp_uploadData = {}
           temp_uploadData.inputId = 'form_editModuleResource' + i;
           temp_uploadData.universityName = this.state.currentEditCourseInfo.university;
@@ -725,11 +726,13 @@ export default class Courses extends Component {
           temp_uploadData.course_image = false;
 
           uploads.push(temp_uploadData)
+        }else{
+          console.log("nothing on the module resource")
+          console.log("resource is:",this.state.allModules[i].resources)
+          tempModule.resources=this.state.allModules[i].resources;
         }
 
-
-
-       if (tempModuleType === "Recorded" ){
+      if (tempModuleType === "Recorded" ){
          console.log("before condition:",this.state.allModules[i].upload_lecture)
        if(document.getElementById('form_editModuleLecture'+i).files[0]) {
          console.log("there is something on this input field");
@@ -847,6 +850,16 @@ export default class Courses extends Component {
             })
                 
           console.log("should print after course image response on 399 & 825");
+         }else{
+           document.getElementById('edit_courseForm_submit').disabled = false;
+                document.getElementById('edit_courseForm_submit').innerHTML = 'Submit';
+                this.getCoursesData()
+               let temp=[];
+                this.setState({
+                  currentEditCourseInfoFetched:false,
+                  currentEditCourseInfo:temp
+                })
+                this.setState({ activeTab: 1 })
          }
       })
       .catch((error) => {
@@ -2759,7 +2772,7 @@ export default class Courses extends Component {
                                         name="department"
                                         data-edit-module={modules}
                                         id={"form_editModuleLectureType" + id} defaultValue={module[id].module_type?module[id].module_type:""} 
-                                        disabled
+                                        
                                       >
                                         <option value="Recorded">Recorded</option>
                                         <option value="Live">Live</option>
@@ -2776,8 +2789,8 @@ export default class Courses extends Component {
                                         Resource Lecture
                                       </label>
                                       <div className="col-md-7">
-                                        <input type="file" name="" id={"form_editModuleLecture" + id} style={{display:'none'}}/>
-                                        <small id="fileHelp" className="form-text text-muted" style={{display:'none'}}>
+                                        <input type="file" name="" id={"form_editModuleLecture" + id} />
+                                        <small id="fileHelp" className="form-text text-muted">
                                         </small>
                                       </div>
                                     </div>
@@ -2901,18 +2914,19 @@ export default class Courses extends Component {
                                         onChange={(event) => addNewLectureTypeSelected(event)}
                                         id={"form_addModuleLectureType" + id} 
                                       >
+                                        <option defaultValue>Select Lecture Type</option>
                                         <option value="Recorded">Recorded</option>
                                         <option value="Live">Live</option>
                                         <option value="Classroom">Classroom</option>
                                       </select>
                                     </div>
                                   </div>
-                                  <div id={'addRecordedLectureDetails' + modules} style={{ display: 'none' }}>
-                                    <div className="form-group row">
+                                  <div id={'addRecordedLectureDetails' + modules}>
+                                    <div className="form-group row" style={{display:'none'}}>
                                       <label className="col-md-3 col-form-label">
                                         Upload Lecture
                                       </label>
-                                      <div className="col-md-7">
+                                      <div className="col-md-7" style={{display:'none'}}>
                                         <input type="file" name="" id={"form_addModuleLecture" + id} />
                                         <small id="fileHelp" className="form-text text-muted">
                                           Please upload lecture
@@ -2932,7 +2946,7 @@ export default class Courses extends Component {
                                     </div>
                                   </div>
                                   
-                                    <div className="form-group row">
+                                    <div className="form-group row" style={{display:'none'}}>
                                       <label className="col-md-3 col-form-label">
                                         Repeat Option
                                       </label>
